@@ -1,6 +1,10 @@
 import { Stack } from "expo-router";
-import { Text, View } from "react-native";
+import { Platform } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { StyleSheet } from "react-native-unistyles";
+
+import { ChatInputBar } from "@/components/features/chat-input-bar";
+import { EmptyChatArea } from "@/components/features/empty-chat-area";
 
 export default function Index() {
   return (
@@ -13,9 +17,14 @@ export default function Index() {
         <Stack.Toolbar.Button icon="shield" onPress={() => {}} />
       </Stack.Toolbar>
 
-      <View style={styles.container}>
-        <Text style={styles.text}>Edit src/app/index.tsx to edit this screen.</Text>
-      </View>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={100}
+      >
+        <EmptyChatArea />
+        <ChatInputBar />
+      </KeyboardAvoidingView>
     </>
   );
 }
@@ -23,11 +32,6 @@ export default function Index() {
 const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
     backgroundColor: theme.colors.background,
-  },
-  text: {
-    color: theme.colors.text,
   },
 }));
