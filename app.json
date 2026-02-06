@@ -22,7 +22,7 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "dark": {
-            "backgroundColor": "#171718"
+            "backgroundColor": "#000"
           }
         }
       ]

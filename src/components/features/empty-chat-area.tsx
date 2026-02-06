@@ -1,7 +1,8 @@
 import { GlassView } from "expo-glass-effect";
+import { Image } from "expo-image";
 import { SFSymbol, SymbolView } from "expo-symbols";
 import { Pressable, Text, View } from "react-native";
-import { StyleSheet, UnistylesRuntime } from "react-native-unistyles";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 const SUGGESTIONS = [
   { icon: "lightbulb.fill" as SFSymbol, label: "Brainstorm ideas" },
@@ -10,19 +11,25 @@ const SUGGESTIONS = [
   { icon: "graduationcap.fill" as SFSymbol, label: "Explain a concept" },
 ] as const;
 
-export const EmptyChatArea = () => {
-  const theme = UnistylesRuntime.getTheme();
+const UniSymbolView = withUnistyles(SymbolView, (theme) => ({
+  tintColor: theme.colors.primary,
+}));
 
+export const EmptyChatArea = () => {
   return (
     <View style={styles.chatArea}>
+      <Image
+        style={{ width: 100, height: 100, marginBottom: 20 }}
+        source={require("@/assets/images/lumyn.png")}
+        contentFit="fill"
+      />
       <Text style={styles.title}>How can I help?</Text>
       <Text style={styles.subtitle}>Start with a prompt or query to get started.</Text>
-
       <View style={styles.suggestionsRow}>
         {SUGGESTIONS.map((suggestion) => (
-          <GlassView key={suggestion.label} style={styles.suggestionChip}>
+          <GlassView key={suggestion.label} style={styles.suggestionChip} isInteractive>
             <Pressable style={styles.suggestionChipPressable}>
-              <SymbolView name={suggestion.icon} size={20} tintColor={theme.colors.primary} />
+              <UniSymbolView name={suggestion.icon} size={20} />
               <Text style={styles.suggestionText}>{suggestion.label}</Text>
             </Pressable>
           </GlassView>
@@ -38,14 +45,6 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
-  },
-  iconContainer: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
   },
   title: {
     fontSize: 28,
@@ -70,16 +69,10 @@ const styles = StyleSheet.create((theme) => ({
     flexWrap: "wrap",
     gap: 10,
   },
-  suggestionsContainer: {
-    paddingHorizontal: 8,
-    gap: 10,
-  },
   suggestionChip: {
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.primary + "20",
   },
   suggestionChipPressable: {
     flexDirection: "row",
