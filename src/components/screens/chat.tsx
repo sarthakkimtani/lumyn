@@ -30,15 +30,13 @@ export const Chat = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={100}
     >
-      {hasTranscript ? (
-        <View style={styles.content}>
+      <View style={styles.content}>
+        {hasTranscript ? (
           <ChatList entries={transcript.entries} loading={loading} streamingContent={content} />
-        </View>
-      ) : (
-        <View style={styles.content}>
+        ) : (
           <EmptyChatArea onSuggestionPress={setMessage} />
-        </View>
-      )}
+        )}
+      </View>
       <ChatInputBar
         value={message}
         loading={loading}

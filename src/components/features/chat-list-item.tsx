@@ -1,6 +1,7 @@
 import { Text, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
+import { MarkdownRenderer } from "@/components/features/markdown/markdown-renderer";
 import { ThemedGlassView } from "@/components/util/themed-glass-view";
 
 import { TranscriptEntry } from "@/modules/local-llm";
@@ -18,9 +19,7 @@ export const ChatListItem = ({ entry }: { entry: TranscriptEntry }) => {
 
   return (
     <View style={styles.assistantRow}>
-      <Text selectable style={styles.assistantText}>
-        {entry.text}
-      </Text>
+      <MarkdownRenderer markdown={entry.text} />
     </View>
   );
 };
