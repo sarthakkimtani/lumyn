@@ -12,7 +12,7 @@ StyleSheet.configure({
   },
 });
 
-type AppThemes = {
+export type AppThemes = {
   light: typeof lightTheme;
   dark: typeof darkTheme;
 };

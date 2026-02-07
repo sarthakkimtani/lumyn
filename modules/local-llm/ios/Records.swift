@@ -16,6 +16,7 @@ enum TranscriptEntryRole: String, Enumerable {
 }
 
 struct TranscriptEntry: Record {
+    @Field var id: String = ""
     @Field var role: TranscriptEntryRole = .prompt
     @Field var text: String = ""
     @Field var tool: String?

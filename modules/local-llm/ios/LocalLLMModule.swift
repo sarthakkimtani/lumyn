@@ -69,7 +69,8 @@ public class LocalLLMModule: Module {
         -> LocalSessionDetails
     {
         let sessionDetails = LocalSessionDetails()
-        let transcriptRecord = request.transcript ?? ModelTranscript()
+        var transcriptRecord = request.transcript ?? ModelTranscript()
+        transcriptRecord = assignMissingTranscriptEntryIds(transcriptRecord)
 
         let sessionId = UUID().uuidString
         sessionDetails.id = sessionId
@@ -84,13 +85,13 @@ public class LocalLLMModule: Module {
             switch entry.role {
             case .prompt:
                 let promptEntry = Transcript.Prompt(
-                    id: UUID().uuidString,
+                    id: entry.id,
                     segments: [.text(.init(content: entry.text))]
                 )
                 entries.append(.prompt(promptEntry))
             case .response:
                 let responseEntry = Transcript.Response(
-                    id: UUID().uuidString,
+                    id: entry.id,
                     assetIDs: [],
                     segments: [.text(.init(content: entry.text))]
                 )
@@ -112,6 +113,18 @@ public class LocalLLMModule: Module {
     private func getTranscript(sessionId: String) -> ModelTranscript {
         return sessionTranscripts[sessionId] ?? ModelTranscript()
     }
+    
+    private func assignMissingTranscriptEntryIds(_ transcript: ModelTranscript)
+        -> ModelTranscript
+    {
+        var updatedTranscript = transcript
+        for index in updatedTranscript.entries.indices {
+            if updatedTranscript.entries[index].id.isEmpty {
+                updatedTranscript.entries[index].id = UUID().uuidString
+            }
+        }
+        return updatedTranscript
+    }
 
     private func streamText(sessionId: String, prompt: String) async
         -> StreamingSession
@@ -132,6 +145,7 @@ public class LocalLLMModule: Module {
         }
         
         var promptEntry = TranscriptEntry()
+        promptEntry.id = UUID().uuidString
         promptEntry.role = .prompt
         promptEntry.text = prompt
         promptEntry.tool = nil
@@ -161,6 +175,7 @@ public class LocalLLMModule: Module {
 
                 if !responseContent.isEmpty {
                     var responseEntry = TranscriptEntry()
+                    responseEntry.id = UUID().uuidString
                     responseEntry.role = .response
                     responseEntry.text = responseContent
                     responseEntry.tool = nil

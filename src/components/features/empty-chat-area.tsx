@@ -5,34 +5,55 @@ import { Pressable, Text, View } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 const SUGGESTIONS = [
-  { icon: "lightbulb.fill" as SFSymbol, label: "Brainstorm ideas" },
-  { icon: "doc.text.fill" as SFSymbol, label: "Help me write" },
-  { icon: "chevron.left.forwardslash.chevron.right" as SFSymbol, label: "Write code" },
-  { icon: "graduationcap.fill" as SFSymbol, label: "Explain a concept" },
+  {
+    icon: "lightbulb.fill" as SFSymbol,
+    label: "Brainstorm ideas",
+    prompt: "Help me brainstorm ideas for a new app feature.",
+  },
+  {
+    icon: "doc.text.fill" as SFSymbol,
+    label: "Help me write",
+    prompt: "Help me write a concise message that sounds professional.",
+  },
+  {
+    icon: "chevron.left.forwardslash.chevron.right" as SFSymbol,
+    label: "Write code",
+    prompt: "Write a clean React Native component for a settings row.",
+  },
+  {
+    icon: "graduationcap.fill" as SFSymbol,
+    label: "Explain a concept",
+    prompt: "Explain state management in React Native with examples.",
+  },
 ] as const;
 
 const UniSymbolView = withUnistyles(SymbolView, (theme) => ({
   tintColor: theme.colors.primary,
 }));
 
-export const EmptyChatArea = () => {
+export const EmptyChatArea = ({
+  onSuggestionPress,
+}: {
+  onSuggestionPress?: (prompt: string) => void;
+}) => {
   return (
     <View style={styles.chatArea}>
-      <Image
-        style={{ width: 100, height: 100, marginBottom: 20 }}
-        source={require("@/assets/images/lumyn.png")}
-        contentFit="fill"
-      />
+      <Image style={styles.logo} source={require("@/assets/images/lumyn.png")} contentFit="fill" />
       <Text style={styles.title}>How can I help?</Text>
       <Text style={styles.subtitle}>Start with a prompt or query to get started.</Text>
       <View style={styles.suggestionsRow}>
         {SUGGESTIONS.map((suggestion) => (
-          <GlassView key={suggestion.label} style={styles.suggestionChip} isInteractive>
-            <Pressable style={styles.suggestionChipPressable}>
-              <UniSymbolView name={suggestion.icon} size={20} />
-              <Text style={styles.suggestionText}>{suggestion.label}</Text>
-            </Pressable>
-          </GlassView>
+          <View key={suggestion.label}>
+            <GlassView style={styles.suggestionChip} isInteractive>
+              <Pressable
+                style={styles.suggestionChipPressable}
+                onPress={() => onSuggestionPress?.(suggestion.prompt)}
+              >
+                <UniSymbolView name={suggestion.icon} size={20} />
+                <Text style={styles.suggestionText}>{suggestion.label}</Text>
+              </Pressable>
+            </GlassView>
+          </View>
         ))}
       </View>
     </View>
@@ -45,6 +66,11 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,

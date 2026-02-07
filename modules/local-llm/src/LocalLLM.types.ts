@@ -7,6 +7,7 @@ export type LocalModelAvailability = {
 export type TranscriptEntryRole = "prompt" | "response" | "toolCalls" | "toolOutput";
 
 export type TranscriptEntry = {
+  id?: string | null;
   role: TranscriptEntryRole;
   text: string;
   tool: string | null;

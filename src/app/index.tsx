@@ -1,14 +1,8 @@
 import { Stack } from "expo-router";
-import { Platform } from "react-native";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
-import { ChatInputBar } from "@/components/features/chat-input-bar";
-import { EmptyChatArea } from "@/components/features/empty-chat-area";
+import { Chat } from "@/components/screens/chat";
 
-const ThemedKeyboardAvoidingView = withUnistyles(KeyboardAvoidingView);
-
-export default function Index() {
+export default function ChatScreen() {
   return (
     <>
       <Stack.Toolbar placement="left">
@@ -19,21 +13,7 @@ export default function Index() {
         <Stack.Toolbar.Button icon="shield" onPress={() => {}} />
       </Stack.Toolbar>
 
-      <ThemedKeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={100}
-      >
-        <EmptyChatArea />
-        <ChatInputBar />
-      </ThemedKeyboardAvoidingView>
+      <Chat />
     </>
   );
 }
-
-const styles = StyleSheet.create((theme) => ({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-}));
