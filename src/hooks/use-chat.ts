@@ -1,18 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import {
+import LocalLLMModule, {
   LocalSessionDetails,
   ModelTranscript,
   StreamingChunkEvent,
   StreamingErrorEvent,
-} from "../LocalLLM.types";
-import LocalLLMModule from "../LocalLLMModule";
+} from "@/modules/local-llm";
 
 export function useChat(initialTranscript: ModelTranscript | null = null) {
   const [content, setContent] = useState("");
   const [session, setSession] = useState<LocalSessionDetails | null>(null);
-  const [transcript, setTranscript] = useState<ModelTranscript>(() =>
-    initialTranscript ?? { entries: [] },
+  const [transcript, setTranscript] = useState<ModelTranscript>(
+    () => initialTranscript ?? { entries: [] },
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

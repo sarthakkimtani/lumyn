@@ -2,4 +2,3 @@
 // and on native platforms to LocalLLMModule.ts
 export * from "./src/LocalLLM.types";
 export { default } from "./src/LocalLLMModule";
-export * from "./src/hooks/use-chat";

@@ -3,11 +3,10 @@ import { Platform, Text, View } from "react-native";
 import { KeyboardAvoidingView, KeyboardController } from "react-native-keyboard-controller";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
-import { ChatInputBar } from "@/components/features/chat-input-bar";
-import { ChatList } from "@/components/features/chat-list";
-import { EmptyChatArea } from "@/components/features/empty-chat-area";
-
-import { useChat } from "@/modules/local-llm";
+import { ChatInputBar } from "@/components/features/chat/chat-input-bar";
+import { ChatList } from "@/components/features/chat/chat-list";
+import { EmptyChatArea } from "@/components/features/chat/empty-chat-area";
+import { useChat } from "@/hooks/use-chat";
 
 const ThemedKeyboardAvoidingView = withUnistyles(KeyboardAvoidingView);
 

@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-import { ChatListItem } from "@/components/features/chat-list-item";
+import { ChatListItem } from "@/components/features/chat/chat-list-item";
 import { TypingDot } from "@/components/util/typing-dot";
 
 import { TranscriptEntry } from "@/modules/local-llm";
