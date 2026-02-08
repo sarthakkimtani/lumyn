@@ -63,7 +63,7 @@ export const ChatInputBar = ({
         />
       </GlassView>
       <ThemedGlassView
-        color="primary"
+        themeColor="primary"
         isInteractive
         style={[styles.sendButton, !canSend && styles.sendButtonDisabled]}
       >
@@ -88,6 +88,7 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "flex-end",
     marginVertical: 10,
     marginHorizontal: 14,
+    maxHeight: 140,
     gap: 10,
   },
   glassContainer: {

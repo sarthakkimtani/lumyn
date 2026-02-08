@@ -10,7 +10,7 @@ export const ChatListItem = ({ entry }: { entry: TranscriptEntry }) => {
   if (entry.role === "prompt") {
     return (
       <View style={styles.userRow}>
-        <ThemedGlassView style={styles.userBubble} color="primary">
+        <ThemedGlassView style={styles.userBubble} themeColor="primary">
           <Text style={styles.userText}>{entry.text}</Text>
         </ThemedGlassView>
       </View>

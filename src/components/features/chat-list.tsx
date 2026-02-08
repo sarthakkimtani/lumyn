@@ -1,9 +1,10 @@
-import { FlashList } from "@shopify/flash-list";
-import { useEffect, useMemo, useRef } from "react";
-import { View } from "react-native";
+import { FlashList, FlashListRef } from "@shopify/flash-list";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NativeScrollEvent, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { ChatListItem } from "@/components/features/chat-list-item";
+import { ScrollDownButton } from "@/components/features/scroll-down-button";
 import { StreamingItem } from "@/components/features/streaming-item";
 
 import { TranscriptEntry } from "@/modules/local-llm";
@@ -19,7 +20,10 @@ type ChatRow =
   | { type: "streaming"; id: string };
 
 export const ChatList = ({ entries, loading, streamingContent }: ChatListProps) => {
-  const listRef = useRef<any>(null);
+  const [viewportHeight, setViewportHeight] = useState(0);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const listRef = useRef<FlashListRef<ChatRow>>(null);
 
   const rows = useMemo<ChatRow[]>(() => {
     const mappedEntries: ChatRow[] = entries.map((entry, index) => ({
@@ -35,45 +39,56 @@ export const ChatList = ({ entries, loading, streamingContent }: ChatListProps) 
     return mappedEntries;
   }, [entries, loading]);
 
+  const scrollToEnd = () => listRef.current?.scrollToEnd({ animated: true });
+
+  const isCloseToBottom = ({
+    layoutMeasurement,
+    contentOffset,
+    contentSize,
+  }: NativeScrollEvent) => {
+    const paddingToBottom = 20;
+    return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+  };
+
+  const lastEntry = entries[entries.length - 1];
   useEffect(() => {
-    requestAnimationFrame(() => {
-      listRef.current?.scrollToEnd({ animated: true });
-    });
-  }, [streamingContent, rows.length]);
+    if (lastEntry?.role === "prompt") {
+      scrollToEnd();
+    }
+  }, [lastEntry?.id, lastEntry?.role]);
 
   return (
-    <FlashList
-      ref={listRef}
-      data={rows}
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) =>
-        item.type === "entry" ? (
-          <ChatListItem entry={item.entry} />
-        ) : (
-          <StreamingItem content={streamingContent} />
-        )
-      }
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
-      maintainVisibleContentPosition={{
-        autoscrollToBottomThreshold: 0.2,
-      }}
-      onContentSizeChange={() => {
-        requestAnimationFrame(() => {
-          listRef.current?.scrollToEnd({ animated: true });
-        });
-      }}
-      onLayout={() => {
-        requestAnimationFrame(() => {
-          listRef.current?.scrollToEnd({ animated: false });
-        });
-      }}
-    />
+    <View style={{ flex: 1 }}>
+      <FlashList
+        ref={listRef}
+        data={rows}
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        keyExtractor={(item) => item.id}
+        onLayout={(e) => setViewportHeight(e.nativeEvent.layout.height)}
+        onContentSizeChange={(_, h) => setContentHeight(h)}
+        showsVerticalScrollIndicator={false}
+        onScroll={({ nativeEvent }) => {
+          setIsAtBottom(isCloseToBottom(nativeEvent));
+        }}
+        renderItem={({ item }) =>
+          item.type === "entry" ? (
+            <ChatListItem entry={item.entry} />
+          ) : (
+            <StreamingItem content={streamingContent} />
+          )
+        }
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+      />
+      <ScrollDownButton
+        visible={contentHeight > viewportHeight && !isAtBottom}
+        onPress={scrollToEnd}
+      />
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },

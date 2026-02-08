@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Platform, Text, View } from "react-native";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { KeyboardAvoidingView, KeyboardController } from "react-native-keyboard-controller";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { ChatInputBar } from "@/components/features/chat-input-bar";
@@ -22,6 +22,7 @@ export const Chat = () => {
     if (!trimmed || loading) return;
     setMessage("");
     await startStreaming(trimmed);
+    await KeyboardController.dismiss();
   };
 
   return (

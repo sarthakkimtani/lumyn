@@ -1,29 +1,18 @@
-import { GlassView } from "expo-glass-effect";
-import { StyleProp, ViewStyle } from "react-native";
+import { GlassView, GlassViewProps } from "expo-glass-effect";
 import { withUnistyles } from "react-native-unistyles";
 
 import { AppThemes } from "@/styles/unistyles";
 
 type ThemeColor = keyof AppThemes["light"]["colors"];
 
-export const ThemedGlassView = ({
-  style,
-  color,
-  isInteractive,
-  children,
-}: {
-  style: StyleProp<ViewStyle>;
-  color: ThemeColor;
-  isInteractive?: boolean | undefined;
-  children: React.ReactNode;
-}) => {
+interface ThemedGlassViewProps extends Omit<GlassViewProps, "tintColor"> {
+  themeColor: ThemeColor;
+}
+
+export const ThemedGlassView = ({ themeColor, children, ...props }: ThemedGlassViewProps) => {
   const UnistylesGlassView = withUnistyles(GlassView, (theme) => ({
-    tintColor: theme.colors[color],
+    tintColor: theme.colors[themeColor],
   }));
 
-  return (
-    <UnistylesGlassView style={style} isInteractive={isInteractive}>
-      {children}
-    </UnistylesGlassView>
-  );
+  return <UnistylesGlassView {...props}>{children}</UnistylesGlassView>;
 };

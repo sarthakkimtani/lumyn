@@ -1,8 +1,10 @@
 import { GlassView } from "expo-glass-effect";
 import { Image } from "expo-image";
-import { SFSymbol, SymbolView } from "expo-symbols";
+import { SFSymbol } from "expo-symbols";
 import { Pressable, Text, View } from "react-native";
-import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { StyleSheet } from "react-native-unistyles";
+
+import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
 
 const SUGGESTIONS = [
   {
@@ -27,10 +29,6 @@ const SUGGESTIONS = [
   },
 ] as const;
 
-const UniSymbolView = withUnistyles(SymbolView, (theme) => ({
-  tintColor: theme.colors.primary,
-}));
-
 export const EmptyChatArea = ({
   onSuggestionPress,
 }: {
@@ -49,7 +47,7 @@ export const EmptyChatArea = ({
                 style={styles.suggestionChipPressable}
                 onPress={() => onSuggestionPress?.(suggestion.prompt)}
               >
-                <UniSymbolView name={suggestion.icon} size={20} />
+                <ThemedSymbolView themeColor="primary" name={suggestion.icon} size={20} />
                 <Text style={styles.suggestionText}>{suggestion.label}</Text>
               </Pressable>
             </GlassView>
