@@ -16,6 +16,7 @@ declare class LocalLLMModule extends NativeModule {
   startSession(request: LocalSessionRequest): LocalSessionDetails;
   getTranscript(sessionId: string): ModelTranscript;
   streamText(request: StreamTextRequest): Promise<StreamingSession>;
+  setSystemPrompt(prompt: string): void;
 
   addListener(
     eventName: "onStreamingChunk",

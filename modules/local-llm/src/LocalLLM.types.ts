@@ -4,7 +4,12 @@ export type LocalModelAvailability = {
   osVersion: string;
 };
 
-export type TranscriptEntryRole = "prompt" | "response" | "toolCalls" | "toolOutput";
+export type TranscriptEntryRole =
+  | "instructions"
+  | "prompt"
+  | "response"
+  | "toolCalls"
+  | "toolOutput";
 
 export type TranscriptEntry = {
   id?: string | null;

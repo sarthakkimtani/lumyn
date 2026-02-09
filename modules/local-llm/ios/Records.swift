@@ -9,6 +9,7 @@ struct LocalModelAvailability: Record {
 }
 
 enum TranscriptEntryRole: String, Enumerable {
+    case instructions
     case prompt
     case response
     case toolCalls

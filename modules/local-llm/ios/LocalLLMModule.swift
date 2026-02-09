@@ -4,12 +4,17 @@ import FoundationModels
 public class LocalLLMModule: Module {
     private var sessions: [String: Any] = [:]
     private var sessionTranscripts: [String: ModelTranscript] = [:]
+    private var systemPrompt: String = ""
 
     public func definition() -> ModuleDefinition {
         Name("LocalLLM")
 
         Function("checkAvailability") { () -> LocalModelAvailability in
             return getModelAvailability()
+        }
+
+        Function("setSystemPrompt") { (prompt: String) in
+            setSystemPrompt(prompt)
         }
 
         Function("startSession") {
@@ -36,10 +41,10 @@ public class LocalLLMModule: Module {
         -> LocalModelAvailability
     {
         let availability = LocalModelAvailability()
-        
+
         guard #available(iOS 26.0, *) else {
             availability.isAvailable = false
-            availability.reason = "Requires iOS 26.0 or later"
+            availability.reason = LocalLLMErrorMessage.requiresIOS26
             return availability
         }
 
@@ -65,65 +70,64 @@ public class LocalLLMModule: Module {
         return availability
     }
 
+    private func setSystemPrompt(_ prompt: String) {
+        systemPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func transcriptForSession(sessionId: String) -> ModelTranscript {
+        if let transcript = sessionTranscripts[sessionId] {
+            return transcript
+        }
+
+        let fallbackTranscript =
+            LocalLLMTranscriptHelper.defaultModelTranscript(
+                systemPrompt: systemPrompt
+            )
+        sessionTranscripts[sessionId] = fallbackTranscript
+        return fallbackTranscript
+    }
+
+    private func storeTranscript(_ transcript: ModelTranscript, for sessionId: String) {
+        sessionTranscripts[sessionId] = transcript
+    }
+
+    private func appendTranscriptEntry(_ entry: TranscriptEntry, to sessionId: String) {
+        var transcript = transcriptForSession(sessionId: sessionId)
+        transcript.entries.append(entry)
+        storeTranscript(transcript, for: sessionId)
+    }
+
     private func createSession(request: LocalSessionRequest)
         -> LocalSessionDetails
     {
         let sessionDetails = LocalSessionDetails()
-        var transcriptRecord = request.transcript ?? ModelTranscript()
-        transcriptRecord = assignMissingTranscriptEntryIds(transcriptRecord)
-
+        let baseTranscript = request.transcript
+            ?? LocalLLMTranscriptHelper.defaultModelTranscript(
+                systemPrompt: systemPrompt
+            )
+        let transcriptRecord = LocalLLMTranscriptHelper.ensureInstructionsEntry(
+            in: baseTranscript,
+            systemPrompt: systemPrompt
+        )
         let sessionId = UUID().uuidString
         sessionDetails.id = sessionId
-        sessionTranscripts[sessionId] = transcriptRecord
-        
+        storeTranscript(transcriptRecord, for: sessionId)
+
         guard #available(iOS 26.0, *) else {
             return sessionDetails
         }
-        
-        var entries: [FoundationModels.Transcript.Entry] = []
-        for entry in transcriptRecord.entries {
-            switch entry.role {
-            case .prompt:
-                let promptEntry = Transcript.Prompt(
-                    id: entry.id,
-                    segments: [.text(.init(content: entry.text))]
-                )
-                entries.append(.prompt(promptEntry))
-            case .response:
-                let responseEntry = Transcript.Response(
-                    id: entry.id,
-                    assetIDs: [],
-                    segments: [.text(.init(content: entry.text))]
-                )
-                entries.append(.response(responseEntry))
-            case .toolCalls:
-                continue
-            case .toolOutput:
-                continue
-            }
-        }
 
-        let transcript = Transcript(entries: entries)
-        let languageSession = LanguageModelSession(transcript: transcript)
+        let languageSession = LocalLLMTranscriptHelper.createLanguageSession(
+            transcriptRecord: transcriptRecord,
+            systemPrompt: systemPrompt
+        )
         sessions[sessionId] = languageSession
 
         return sessionDetails
     }
 
     private func getTranscript(sessionId: String) -> ModelTranscript {
-        return sessionTranscripts[sessionId] ?? ModelTranscript()
-    }
-    
-    private func assignMissingTranscriptEntryIds(_ transcript: ModelTranscript)
-        -> ModelTranscript
-    {
-        var updatedTranscript = transcript
-        for index in updatedTranscript.entries.indices {
-            if updatedTranscript.entries[index].id.isEmpty {
-                updatedTranscript.entries[index].id = UUID().uuidString
-            }
-        }
-        return updatedTranscript
+        return transcriptForSession(sessionId: sessionId)
     }
 
     private func streamText(sessionId: String, prompt: String) async
@@ -131,27 +135,29 @@ public class LocalLLMModule: Module {
     {
         let session = StreamingSession()
         session.sessionId = sessionId
-        
+
         guard #available(iOS 26.0, *) else {
-            session.isActive = false
-            session.error = "Requires iOS 26.0 or later"
-            return session
+            return LocalLLMStreamingHelper.makeInactiveSession(
+                sessionId: sessionId,
+                error: LocalLLMErrorMessage.requiresIOS26
+            )
         }
-        
-        guard let languageSession = sessions[sessionId] as? LanguageModelSession else {
-            session.isActive = false
-            session.error = "Session does not exist"
-            return session
+
+        guard let languageSession = sessions[sessionId] as? LanguageModelSession
+        else {
+            return LocalLLMStreamingHelper.makeInactiveSession(
+                sessionId: sessionId,
+                error: LocalLLMErrorMessage.sessionDoesNotExist
+            )
         }
-        
-        var promptEntry = TranscriptEntry()
-        promptEntry.id = UUID().uuidString
-        promptEntry.role = .prompt
-        promptEntry.text = prompt
-        promptEntry.tool = nil
-        var updatedTranscript = sessionTranscripts[sessionId] ?? ModelTranscript()
-        updatedTranscript.entries.append(promptEntry)
-        sessionTranscripts[sessionId] = updatedTranscript
+
+        appendTranscriptEntry(
+            LocalLLMTranscriptHelper.makeTranscriptEntry(
+                role: .prompt,
+                text: prompt
+            ),
+            to: sessionId
+        )
 
         Task {
             do {
@@ -163,40 +169,40 @@ public class LocalLLMModule: Module {
                     if Task.isCancelled {
                         throw CancellationError()
                     }
-                    
-                    responseContent = currentContent.content
 
-                    let chunkEvent = StreamingChunkEvent()
-                    chunkEvent.sessionId = sessionId
-                    chunkEvent.content = currentContent.content
-                    chunkEvent.isComplete = false
+                    responseContent = currentContent.content
+                    let chunkEvent = LocalLLMStreamingHelper.makeChunkEvent(
+                        sessionId: sessionId,
+                        content: responseContent,
+                        isComplete: false
+                    )
                     sendEvent("onStreamingChunk", chunkEvent.toDictionary())
                 }
 
                 if !responseContent.isEmpty {
-                    var responseEntry = TranscriptEntry()
-                    responseEntry.id = UUID().uuidString
-                    responseEntry.role = .response
-                    responseEntry.text = responseContent
-                    responseEntry.tool = nil
-                    var completionTranscript = self.sessionTranscripts[sessionId] ?? ModelTranscript()
-                    completionTranscript.entries.append(responseEntry)
-                    self.sessionTranscripts[sessionId] = completionTranscript
+                    appendTranscriptEntry(
+                        LocalLLMTranscriptHelper.makeTranscriptEntry(
+                            role: .response,
+                            text: responseContent
+                        ),
+                        to: sessionId
+                    )
                 }
-                
-                let completionEvent = StreamingChunkEvent()
-                completionEvent.sessionId = sessionId
-                completionEvent.content = ""
-                completionEvent.isComplete = true
+
+                let completionEvent = LocalLLMStreamingHelper.makeChunkEvent(
+                    sessionId: sessionId,
+                    content: "",
+                    isComplete: true
+                )
                 sendEvent("onStreamingChunk", completionEvent.toDictionary())
 
             } catch is CancellationError {
             } catch {
-                let errorEvent = StreamingErrorEvent()
-                errorEvent.sessionId = sessionId
-                errorEvent.error = error.localizedDescription
+                let errorEvent = LocalLLMStreamingHelper.makeErrorEvent(
+                    sessionId: sessionId,
+                    error: error.localizedDescription
+                )
                 sendEvent("onStreamingError", errorEvent.toDictionary())
-
             }
         }
 
