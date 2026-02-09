@@ -24,35 +24,27 @@ export function useChat(initialTranscript: ModelTranscript | null = null) {
     setTranscript(nativeTranscript);
   }, []);
 
-  const createSession = useCallback(
-    (hydrationTranscript: ModelTranscript) => {
-      const newSession = LocalLLMModule.startSession({
-        transcript: hydrationTranscript,
-      });
+  const createSession = (hydrationTranscript: ModelTranscript) => {
+    const newSession = LocalLLMModule.startSession({
+      transcript: hydrationTranscript,
+    });
 
-      setSession(newSession);
-      setError(null);
-      syncTranscriptFromSession(newSession.id);
+    setSession(newSession);
+    setError(null);
+    syncTranscriptFromSession(newSession.id);
 
-      return newSession;
-    },
-    [syncTranscriptFromSession],
-  );
+    return newSession;
+  };
 
-  const startSession = useCallback(
-    (hydrationTranscript: ModelTranscript | null = null) => {
-      const transcriptToHydrate = hydrationTranscript ?? transcript;
-      return createSession(transcriptToHydrate);
-    },
-    [createSession, transcript],
-  );
+  const startSession = (hydrationTranscript: ModelTranscript | null = null) => {
+    const transcriptToHydrate = hydrationTranscript ?? transcript;
+    return createSession(transcriptToHydrate);
+  };
 
   useEffect(() => {
-    // Set up event listeners
     const chunkSub = LocalLLMModule.addListener(
       "onStreamingChunk",
       (event: StreamingChunkEvent) => {
-        // Only process events for our session
         if (event.sessionId !== streamingSessionIdRef.current) return;
 
         if (event.isComplete) {
@@ -84,67 +76,61 @@ export function useChat(initialTranscript: ModelTranscript | null = null) {
     };
   }, [syncTranscriptFromSession]);
 
-  const startStreaming = useCallback(
-    async (prompt: string) => {
-      if (loading) {
-        setError("A response is already streaming");
-        return;
-      }
+  const startStreaming = async (prompt: string) => {
+    if (loading) {
+      setError("A response is already streaming");
+      return;
+    }
 
-      if (!prompt.trim()) {
-        setError("Prompt cannot be empty");
-        return;
-      }
+    if (!prompt.trim()) {
+      setError("Prompt cannot be empty");
+      return;
+    }
 
-      try {
-        const trimmedPrompt = prompt.trim();
-        setLoading(true);
-        setError(null);
-        setContent("");
+    try {
+      const trimmedPrompt = prompt.trim();
+      setLoading(true);
+      setError(null);
+      setContent("");
 
-        const activeSession = session ?? startSession();
-        streamingSessionIdRef.current = activeSession.id;
+      const activeSession = session ?? startSession();
+      streamingSessionIdRef.current = activeSession.id;
 
-        const streamResponse = await LocalLLMModule.streamText({
-          sessionId: activeSession.id,
-          prompt: trimmedPrompt,
-        });
+      const streamResponse = await LocalLLMModule.streamText({
+        sessionId: activeSession.id,
+        prompt: trimmedPrompt,
+      });
 
-        if (streamResponse.error) {
-          setError(streamResponse.error);
-          setLoading(false);
-          streamingSessionIdRef.current = null;
-        } else {
-          syncTranscriptFromSession(activeSession.id);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to start streaming");
+      if (streamResponse.error) {
+        setError(streamResponse.error);
         setLoading(false);
         streamingSessionIdRef.current = null;
+      } else {
+        syncTranscriptFromSession(activeSession.id);
       }
-    },
-    [loading, session, startSession, syncTranscriptFromSession],
-  );
-
-  const hydrateSession = useCallback(
-    (hydrationTranscript: ModelTranscript) => {
-      setContent("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to start streaming");
       setLoading(false);
       streamingSessionIdRef.current = null;
+    }
+  };
 
-      return startSession(hydrationTranscript);
-    },
-    [startSession],
-  );
+  const hydrateSession = (hydrationTranscript: ModelTranscript) => {
+    setContent("");
+    setLoading(false);
+    streamingSessionIdRef.current = null;
 
-  const reset = useCallback(() => {
+    return startSession(hydrationTranscript);
+  };
+
+  const reset = () => {
     setContent("");
     setError(null);
     setSession(null);
     setTranscript({ entries: [] });
     setLoading(false);
     streamingSessionIdRef.current = null;
-  }, []);
+  };
 
   return {
     content,

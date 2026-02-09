@@ -1,35 +1,31 @@
-import { Stack } from "expo-router";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import * as SQLite from "expo-sqlite";
+import { SQLiteProvider } from "expo-sqlite";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import { useUnistyles } from "react-native-unistyles";
 
-import { systemPrompt } from "@/config/prompt";
-import LocalLLMModule from "@/modules/local-llm";
+import { AppLayout } from "@/components/layouts/app-layout";
+import migrations from "@/drizzle/migrations";
 
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
   fade: true,
 });
 
-export default function RootLayout() {
-  const { theme } = useUnistyles();
+const DB_NAME = "lumyn.db";
+const expo = SQLite.openDatabaseSync(DB_NAME);
+const db = drizzle(expo);
 
-  useEffect(() => {
-    LocalLLMModule.setSystemPrompt(systemPrompt);
-    SplashScreen.hideAsync();
-  }, []);
+export default function RootLayout() {
+  const { error } = useMigrations(db, migrations);
+  if (error) console.warn("DB Error:", error.message);
 
   return (
-    <KeyboardProvider>
-      <Stack
-        screenOptions={() => ({
-          title: "Lumyn",
-          headerShadowVisible: false,
-          headerStyle: { backgroundColor: theme.colors.background },
-          headerTitleStyle: { color: theme.colors.text },
-        })}
-      />
-    </KeyboardProvider>
+    <SQLiteProvider databaseName={DB_NAME} options={{ enableChangeListener: true }}>
+      <KeyboardProvider>
+        <AppLayout />
+      </KeyboardProvider>
+    </SQLiteProvider>
   );
 }

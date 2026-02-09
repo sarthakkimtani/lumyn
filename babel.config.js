@@ -10,6 +10,7 @@ module.exports = function (api) {
     plugins: [
       ["react-native-unistyles/plugin", unistylesPluginOptions],
       "react-native-reanimated/plugin",
+      ["inline-import", { extensions: [".sql"] }],
     ],
   };
 };
