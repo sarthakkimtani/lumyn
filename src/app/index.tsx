@@ -18,7 +18,10 @@ export default function ChatScreen() {
   return (
     <>
       <Stack.Toolbar placement="left">
-        <Stack.Toolbar.Button icon={"bubble.left.and.text.bubble.right"} onPress={() => {}} />
+        <Stack.Toolbar.Button
+          icon={"bubble.left.and.text.bubble.right"}
+          onPress={() => router.push("/conversations")}
+        />
         <Stack.Toolbar.Button icon="gear" onPress={() => {}} />
       </Stack.Toolbar>
       <Stack.Toolbar placement="right">

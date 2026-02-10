@@ -1,15 +1,15 @@
 import { sql } from "drizzle-orm";
-import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const conversations = sqliteTable("conversations", {
   id: text("id").primaryKey(),
   title: text("title"),
-  createdAt: text("created_at")
+  createdAt: int("created_at")
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at")
+    .default(sql`(unixepoch())`),
+  updatedAt: int("updated_at")
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
 });
 
 export const transcriptEntries = sqliteTable(
@@ -23,9 +23,9 @@ export const transcriptEntries = sqliteTable(
       enum: ["instructions", "prompt", "response", "toolCalls", "toolOutput"],
     }).notNull(),
     text: text("text").notNull(),
-    createdAt: text("created_at")
+    createdAt: int("created_at")
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .default(sql`(unixepoch())`),
   },
   (t) => [index("idx_transcript_conversation").on(t.conversationId)],
 );

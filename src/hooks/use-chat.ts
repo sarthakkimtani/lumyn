@@ -7,18 +7,17 @@ import LocalLLMModule, {
   StreamingChunkEvent,
   StreamingErrorEvent,
 } from "@/modules/local-llm";
+import { getFirstWords } from "@/utils/string";
 
 type UseChatParams = {
   conversationId?: string | null;
   initialTranscript?: ModelTranscript | null;
-  title?: string;
   temporary?: boolean;
 };
 
 export const useChat = ({
   conversationId: existingConversationId = null,
   initialTranscript = null,
-  title = "New Chat",
   temporary = false,
 }: UseChatParams = {}) => {
   const [content, setContent] = useState("");
@@ -33,6 +32,7 @@ export const useChat = ({
 
   const subscriptionsRef = useRef<{ remove: () => void }[]>([]);
   const streamingSessionIdRef = useRef<string | null>(null);
+  const DEFAULT_CHAT_TITLE = "New Chat";
 
   const { upsertConversation, upsertTranscriptEntries } = useQueries();
 
@@ -60,15 +60,18 @@ export const useChat = ({
     [persistTranscriptEntries, temporary],
   );
 
-  const createSession = async (hydrationTranscript: ModelTranscript) => {
+  const createSession = async (
+    hydrationTranscript: ModelTranscript,
+    conversationTitle: string = DEFAULT_CHAT_TITLE,
+  ) => {
     const newSession = LocalLLMModule.startSession({
       transcript: hydrationTranscript,
     });
 
     const dbConversationId = conversationId ?? newSession.id;
 
-    if (!conversationId) {
-      await upsertConversation({ id: dbConversationId, title });
+    if (!conversationId && !temporary) {
+      await upsertConversation({ id: dbConversationId, title: conversationTitle });
       setConversationId(dbConversationId);
     }
 
@@ -80,9 +83,12 @@ export const useChat = ({
     return newSession;
   };
 
-  const startSession = async (hydrationTranscript: ModelTranscript | null = null) => {
+  const startSession = async (
+    hydrationTranscript: ModelTranscript | null = null,
+    conversationTitle: string = DEFAULT_CHAT_TITLE,
+  ) => {
     const transcriptToHydrate = hydrationTranscript ?? transcript;
-    return await createSession(transcriptToHydrate);
+    return await createSession(transcriptToHydrate, conversationTitle);
   };
 
   useEffect(() => {
@@ -135,11 +141,12 @@ export const useChat = ({
 
     try {
       const trimmedPrompt = prompt.trim();
+      const conversationTitleFromPrompt = getFirstWords(trimmedPrompt);
       setLoading(true);
       setError(null);
       setContent("");
 
-      const activeSession = session ?? (await startSession());
+      const activeSession = session ?? (await startSession(null, conversationTitleFromPrompt));
       streamingSessionIdRef.current = activeSession.id;
 
       const streamResponse = await LocalLLMModule.streamText({

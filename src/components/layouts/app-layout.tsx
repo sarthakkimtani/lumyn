@@ -22,6 +22,11 @@ export const AppLayout = () => {
         headerStyle: { backgroundColor: theme.colors.background },
         headerTitleStyle: { color: theme.colors.text },
       })}
-    />
+    >
+      <Stack.Screen
+        name="conversations"
+        options={{ title: "Conversations", headerBackButtonDisplayMode: "minimal" }}
+      />
+    </Stack>
   );
 };

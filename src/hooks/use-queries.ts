@@ -1,3 +1,4 @@
+import { desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 
@@ -9,6 +10,10 @@ export type ConversationInsert = typeof conversations.$inferInsert;
 export const useQueries = () => {
   const expoDb = useSQLiteContext();
   const db = drizzle(expoDb);
+
+  const fetchConversations = async () => {
+    return await db.select().from(conversations).orderBy(desc(conversations.createdAt));
+  };
 
   const upsertConversation = async (insertEntry: ConversationInsert) => {
     const res = await db
@@ -27,5 +32,5 @@ export const useQueries = () => {
     return res.changes;
   };
 
-  return { upsertConversation, upsertTranscriptEntries };
+  return { fetchConversations, upsertConversation, upsertTranscriptEntries };
 };
