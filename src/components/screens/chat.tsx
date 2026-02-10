@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { Platform, Text, View } from "react-native";
 import { KeyboardAvoidingView, KeyboardController } from "react-native-keyboard-controller";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
@@ -10,11 +11,22 @@ import { useChat } from "@/hooks/use-chat";
 
 const ThemedKeyboardAvoidingView = withUnistyles(KeyboardAvoidingView);
 
-export const Chat = () => {
+type ChatProps = {
+  onTranscriptChange?: (hasTranscript: boolean) => void;
+};
+
+export const Chat = ({ onTranscriptChange }: ChatProps) => {
   const [message, setMessage] = useState("");
-  const { transcript, content, loading, error, startStreaming } = useChat();
+  const { temporary } = useLocalSearchParams<{ temporary: string }>();
+  const { transcript, content, loading, error, startStreaming } = useChat({
+    temporary: temporary === "true",
+  });
 
   const hasTranscript = transcript.entries.length > 0;
+
+  useEffect(() => {
+    onTranscriptChange?.(hasTranscript);
+  }, [hasTranscript, onTranscriptChange]);
 
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
@@ -34,7 +46,7 @@ export const Chat = () => {
         {hasTranscript ? (
           <ChatList entries={transcript.entries} loading={loading} streamingContent={content} />
         ) : (
-          <EmptyChatArea onSuggestionPress={setMessage} />
+          <EmptyChatArea isTemporaryChat={temporary === "true"} onSuggestionPress={setMessage} />
         )}
       </View>
       <ChatInputBar

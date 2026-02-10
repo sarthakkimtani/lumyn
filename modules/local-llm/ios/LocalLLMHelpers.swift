@@ -54,9 +54,12 @@ enum LocalLLMTranscriptHelper {
         }
 
         if onlyInstructions {
-            let instructions = transcriptRecord.entries.first(where: {
+            let instructionsFromTranscript = transcriptRecord.entries.first(where: {
                 $0.role == .instructions
-            })?.text ?? systemPrompt
+            })?.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let instructions = instructionsFromTranscript?.isEmpty == false
+                ? instructionsFromTranscript ?? systemPrompt
+                : systemPrompt
             return LanguageModelSession(instructions: instructions)
         }
 

@@ -12,7 +12,7 @@ export type TranscriptEntryRole =
   | "toolOutput";
 
 export type TranscriptEntry = {
-  id?: string | null;
+  id: string;
   role: TranscriptEntryRole;
   text: string;
   tool: string | null;

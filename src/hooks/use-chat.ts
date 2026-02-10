@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useQueries } from "@/hooks/use-queries";
 import LocalLLMModule, {
   LocalSessionDetails,
   ModelTranscript,
@@ -7,50 +8,94 @@ import LocalLLMModule, {
   StreamingErrorEvent,
 } from "@/modules/local-llm";
 
-export function useChat(initialTranscript: ModelTranscript | null = null) {
+type UseChatParams = {
+  conversationId?: string | null;
+  initialTranscript?: ModelTranscript | null;
+  title?: string;
+  temporary?: boolean;
+};
+
+export const useChat = ({
+  conversationId: existingConversationId = null,
+  initialTranscript = null,
+  title = "New Chat",
+  temporary = false,
+}: UseChatParams = {}) => {
   const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [session, setSession] = useState<LocalSessionDetails | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(existingConversationId);
+
   const [transcript, setTranscript] = useState<ModelTranscript>(
     () => initialTranscript ?? { entries: [] },
   );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const subscriptionsRef = useRef<{ remove: () => void }[]>([]);
   const streamingSessionIdRef = useRef<string | null>(null);
 
-  const syncTranscriptFromSession = useCallback((sessionId: string) => {
-    const nativeTranscript = LocalLLMModule.getTranscript(sessionId);
-    setTranscript(nativeTranscript);
-  }, []);
+  const { upsertConversation, upsertTranscriptEntries } = useQueries();
 
-  const createSession = (hydrationTranscript: ModelTranscript) => {
+  const persistTranscriptEntries = useCallback(
+    async (dbConversationId: string, transcriptToSave: ModelTranscript) => {
+      const insertEntries = transcriptToSave.entries.map((entry) => ({
+        conversationId: dbConversationId,
+        ...entry,
+      }));
+
+      await upsertTranscriptEntries(insertEntries);
+    },
+    [upsertTranscriptEntries],
+  );
+
+  const syncTranscriptFromSession = useCallback(
+    async (sessionId: string, dbConversationId: string) => {
+      const nativeTranscript = LocalLLMModule.getTranscript(sessionId);
+      setTranscript(nativeTranscript);
+
+      if (!temporary) {
+        await persistTranscriptEntries(dbConversationId, nativeTranscript);
+      }
+    },
+    [persistTranscriptEntries, temporary],
+  );
+
+  const createSession = async (hydrationTranscript: ModelTranscript) => {
     const newSession = LocalLLMModule.startSession({
       transcript: hydrationTranscript,
     });
 
+    const dbConversationId = conversationId ?? newSession.id;
+
+    if (!conversationId) {
+      await upsertConversation({ id: dbConversationId, title });
+      setConversationId(dbConversationId);
+    }
+
     setSession(newSession);
     setError(null);
-    syncTranscriptFromSession(newSession.id);
+
+    await syncTranscriptFromSession(newSession.id, dbConversationId);
 
     return newSession;
   };
 
-  const startSession = (hydrationTranscript: ModelTranscript | null = null) => {
+  const startSession = async (hydrationTranscript: ModelTranscript | null = null) => {
     const transcriptToHydrate = hydrationTranscript ?? transcript;
-    return createSession(transcriptToHydrate);
+    return await createSession(transcriptToHydrate);
   };
 
   useEffect(() => {
     const chunkSub = LocalLLMModule.addListener(
       "onStreamingChunk",
-      (event: StreamingChunkEvent) => {
+      async (event: StreamingChunkEvent) => {
         if (event.sessionId !== streamingSessionIdRef.current) return;
 
         if (event.isComplete) {
           setLoading(false);
           streamingSessionIdRef.current = null;
-          syncTranscriptFromSession(event.sessionId);
+          const dbConversationId = conversationId ?? event.sessionId;
+          await syncTranscriptFromSession(event.sessionId, dbConversationId);
         } else {
           setContent(event.content);
         }
@@ -59,13 +104,14 @@ export function useChat(initialTranscript: ModelTranscript | null = null) {
 
     const errorSub = LocalLLMModule.addListener(
       "onStreamingError",
-      (event: StreamingErrorEvent) => {
+      async (event: StreamingErrorEvent) => {
         if (event.sessionId !== streamingSessionIdRef.current) return;
 
         setError(event.error);
         setLoading(false);
         streamingSessionIdRef.current = null;
-        syncTranscriptFromSession(event.sessionId);
+        const dbConversationId = conversationId ?? event.sessionId;
+        await syncTranscriptFromSession(event.sessionId, dbConversationId);
       },
     );
 
@@ -74,7 +120,7 @@ export function useChat(initialTranscript: ModelTranscript | null = null) {
     return () => {
       subscriptionsRef.current.forEach((sub) => sub.remove());
     };
-  }, [syncTranscriptFromSession]);
+  }, [conversationId, syncTranscriptFromSession]);
 
   const startStreaming = async (prompt: string) => {
     if (loading) {
@@ -93,7 +139,7 @@ export function useChat(initialTranscript: ModelTranscript | null = null) {
       setError(null);
       setContent("");
 
-      const activeSession = session ?? startSession();
+      const activeSession = session ?? (await startSession());
       streamingSessionIdRef.current = activeSession.id;
 
       const streamResponse = await LocalLLMModule.streamText({
@@ -106,7 +152,8 @@ export function useChat(initialTranscript: ModelTranscript | null = null) {
         setLoading(false);
         streamingSessionIdRef.current = null;
       } else {
-        syncTranscriptFromSession(activeSession.id);
+        const dbConversationId = conversationId ?? activeSession.id;
+        await syncTranscriptFromSession(activeSession.id, dbConversationId);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start streaming");
@@ -115,12 +162,14 @@ export function useChat(initialTranscript: ModelTranscript | null = null) {
     }
   };
 
-  const hydrateSession = (hydrationTranscript: ModelTranscript) => {
+  const hydrateSession = async (hydrationTranscript: ModelTranscript, existingId?: string) => {
     setContent("");
     setLoading(false);
     streamingSessionIdRef.current = null;
 
-    return startSession(hydrationTranscript);
+    if (existingId) setConversationId(existingId);
+
+    return await startSession(hydrationTranscript);
   };
 
   const reset = () => {
@@ -130,12 +179,14 @@ export function useChat(initialTranscript: ModelTranscript | null = null) {
     setTranscript({ entries: [] });
     setLoading(false);
     streamingSessionIdRef.current = null;
+    setConversationId(null);
   };
 
   return {
     content,
     session,
     sessionId: session?.id ?? null,
+    conversationId,
     transcript,
     loading,
     error,
@@ -144,4 +195,4 @@ export function useChat(initialTranscript: ModelTranscript | null = null) {
     startStreaming,
     reset,
   };
-}
+};

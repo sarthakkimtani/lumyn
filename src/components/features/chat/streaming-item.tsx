@@ -8,6 +8,7 @@ import { TranscriptEntry } from "@/modules/local-llm";
 
 export const StreamingItem = ({ content }: { content: string }) => {
   const streamingEntry: TranscriptEntry = {
+    id: "__streaming-response__",
     role: "response",
     text: content,
     tool: null,

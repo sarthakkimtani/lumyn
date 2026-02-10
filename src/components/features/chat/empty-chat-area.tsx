@@ -31,14 +31,28 @@ const SUGGESTIONS = [
 
 export const EmptyChatArea = ({
   onSuggestionPress,
+  isTemporaryChat,
 }: {
   onSuggestionPress?: (prompt: string) => void;
+  isTemporaryChat: boolean;
 }) => {
   return (
     <View style={styles.chatArea}>
-      <Image style={styles.logo} source={require("@/assets/images/lumyn.png")} contentFit="fill" />
-      <Text style={styles.title}>How can I help?</Text>
-      <Text style={styles.subtitle}>Start with a prompt or query to get started.</Text>
+      {isTemporaryChat ? (
+        <ThemedSymbolView style={styles.logo} name="lock.shield.fill" themeColor="primary" />
+      ) : (
+        <Image
+          style={styles.logo}
+          source={require("@/assets/images/lumyn.png")}
+          contentFit="fill"
+        />
+      )}
+      <Text style={styles.title}>{isTemporaryChat ? "Temporary Chat" : "How can I help?"}</Text>
+      <Text style={styles.subtitle}>
+        {isTemporaryChat
+          ? "Messages in this chat will not be saved"
+          : "Start with a prompt or query to get started."}
+      </Text>
       <View style={styles.suggestionsRow}>
         {SUGGESTIONS.map((suggestion) => (
           <View key={suggestion.label}>
@@ -83,7 +97,6 @@ const styles = StyleSheet.create((theme) => ({
     lineHeight: 22,
     color: theme.colors.textSecondary,
     textAlign: "center",
-    maxWidth: 280,
   },
   suggestionsRow: {
     marginTop: 30,
