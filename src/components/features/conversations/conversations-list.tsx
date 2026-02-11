@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { SectionList, Text, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
@@ -34,8 +33,14 @@ const buildSections = (rows: ConversationRow[]): ConversationSection[] => {
   }));
 };
 
-export const ConversationsList = ({ data }: { data: ConversationRow[] }) => {
-  const sections = useMemo(() => buildSections(data), [data]);
+export const ConversationsList = ({
+  data,
+  onConversationPress,
+}: {
+  data: ConversationRow[];
+  onConversationPress?: (conversation: ConversationRow) => void;
+}) => {
+  const sections = buildSections(data);
 
   return (
     <SectionList
@@ -50,7 +55,14 @@ export const ConversationsList = ({ data }: { data: ConversationRow[] }) => {
       renderItem={({ item, index, section }) => {
         const isFirst = index === 0;
         const isLast = index === section.data.length - 1;
-        return <ConversationTile conversation={item} isFirst={isFirst} isLast={isLast} />;
+        return (
+          <ConversationTile
+            conversation={item}
+            isFirst={isFirst}
+            isLast={isLast}
+            onPress={onConversationPress}
+          />
+        );
       }}
       renderSectionFooter={() => <View style={styles.sectionFooter} />}
     />

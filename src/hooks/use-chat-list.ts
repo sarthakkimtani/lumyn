@@ -20,7 +20,9 @@ export const useChatList = ({ entries, loading }: UseChatListParams) => {
   const listRef = useRef<FlashListRef<ChatRow>>(null);
 
   const rows = useMemo<ChatRow[]>(() => {
-    const mappedEntries: ChatRow[] = entries.map((entry, index) => ({
+    const mappedEntries: ChatRow[] = entries
+      .filter((entry) => entry.role !== "instructions")
+      .map((entry, index) => ({
       type: "entry",
       id: entry.id ?? `${entry.role}-${index}`,
       entry,
@@ -56,7 +58,7 @@ export const useChatList = ({ entries, loading }: UseChatListParams) => {
     if (lastEntry?.role === "prompt") {
       scrollToEnd();
     }
-  }, [lastEntry.id, lastEntry?.role, scrollToEnd]);
+  }, [lastEntry?.id, lastEntry?.role, scrollToEnd]);
 
   return {
     listRef,

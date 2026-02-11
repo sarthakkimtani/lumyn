@@ -7,7 +7,7 @@ import { ThemedGlassView } from "@/components/util/themed-glass-view";
 import { TranscriptEntry } from "@/modules/local-llm";
 
 export const ChatListItem = ({ entry }: { entry: TranscriptEntry }) => {
-  if (entry.role === "instructions") return;
+  if (entry.role === "instructions") return null;
   if (entry.role === "prompt") {
     return (
       <View style={styles.userRow}>

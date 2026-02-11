@@ -189,12 +189,15 @@ export const useChat = ({
     setConversationId(null);
   };
 
+  const hasTranscript = transcript.entries.some((entry) => entry.role !== "instructions");
+
   return {
     content,
     session,
     sessionId: session?.id ?? null,
     conversationId,
     transcript,
+    hasTranscript,
     loading,
     error,
     startSession,

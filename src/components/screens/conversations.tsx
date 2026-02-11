@@ -1,3 +1,5 @@
+import { useIsFocused } from "@react-navigation/native";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
@@ -10,50 +12,50 @@ import { useQueries } from "@/hooks/use-queries";
 type ConversationRow = typeof conversations.$inferSelect;
 
 export const Conversations = () => {
+  const isFocused = useIsFocused();
   const { fetchConversations } = useQueries();
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<ConversationRow[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isFocused) return;
+    let cancelled = false;
+
     const loadConversations = async () => {
       setLoading(true);
       setError(null);
 
       try {
         const conversationsFromDb = await fetchConversations();
+        if (cancelled) return;
         setRows(conversationsFromDb);
       } catch (fetchError) {
+        if (cancelled) return;
         setError(fetchError instanceof Error ? fetchError.message : "Failed to load conversations");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     void loadConversations();
-  }, [fetchConversations]);
 
-  if (loading) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.stateContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      </View>
-    );
-  }
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchConversations, isFocused]);
 
   return (
     <View style={styles.container}>
-      {rows.length === 0 ? (
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : error ? (
+        <View style={styles.stateContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      ) : rows.length === 0 ? (
         <View style={styles.stateContainer}>
           <ThemedSymbolView
             name="bubble.left.and.text.bubble.right"
@@ -65,7 +67,10 @@ export const Conversations = () => {
           <Text style={styles.emptySubtitle}>Start a chat to see it here.</Text>
         </View>
       ) : (
-        <ConversationsList data={rows} />
+        <ConversationsList
+          data={rows}
+          onConversationPress={(conversation) => router.replace(`/chat/${conversation.id}`)}
+        />
       )}
     </View>
   );
@@ -79,6 +84,7 @@ const styles = StyleSheet.create((theme) => ({
   center: {
     alignItems: "center",
     justifyContent: "center",
+    flex: 1,
   },
   stateContainer: {
     flex: 1,

@@ -1,77 +1,40 @@
-import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { Platform, Text, View } from "react-native";
-import { KeyboardAvoidingView, KeyboardController } from "react-native-keyboard-controller";
-import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 
-import { ChatInputBar } from "@/components/features/chat/chat-input-bar";
-import { ChatList } from "@/components/features/chat/chat-list";
-import { EmptyChatArea } from "@/components/features/chat/empty-chat-area";
-import { useChat } from "@/hooks/use-chat";
+import { ChatRoot } from "@/components/features/chat/chat-root";
+import { ChatToolbar } from "@/components/toolbars/chat-toolbar";
 
-const ThemedKeyboardAvoidingView = withUnistyles(KeyboardAvoidingView);
-
-type ChatProps = {
-  onTranscriptChange?: (hasTranscript: boolean) => void;
-};
-
-export const Chat = ({ onTranscriptChange }: ChatProps) => {
-  const [message, setMessage] = useState("");
+export const Chat = () => {
   const { temporary } = useLocalSearchParams<{ temporary: string }>();
-  const { transcript, content, loading, error, startStreaming } = useChat({
-    temporary: temporary === "true",
-  });
+  const isTemporary = temporary === "true";
 
-  const hasTranscript = transcript.entries.length > 0;
+  const [chatInstanceKey, setChatInstanceKey] = useState(0);
+  const [hasTranscript, setHasTranscript] = useState(false);
 
-  useEffect(() => {
-    onTranscriptChange?.(hasTranscript);
-  }, [hasTranscript, onTranscriptChange]);
-
-  const sendMessage = async (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed || loading) return;
-    setMessage("");
-    await startStreaming(trimmed);
-    await KeyboardController.dismiss();
+  const startNewChat = () => {
+    router.setParams({ temporary: "false" });
+    setChatInstanceKey((prev) => prev + 1);
+    setHasTranscript(false);
   };
 
   return (
-    <ThemedKeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={100}
-    >
-      <View style={styles.content}>
-        {hasTranscript ? (
-          <ChatList entries={transcript.entries} loading={loading} streamingContent={content} />
-        ) : (
-          <EmptyChatArea isTemporaryChat={temporary === "true"} onSuggestionPress={setMessage} />
-        )}
-      </View>
-      <ChatInputBar
-        value={message}
-        loading={loading}
-        onChangeText={setMessage}
-        onSend={() => sendMessage(message)}
+    <>
+      <ChatToolbar
+        hasTranscript={hasTranscript}
+        onNewChat={startNewChat}
+        rightActions={
+          <Stack.Toolbar.Button
+            hidden={hasTranscript}
+            icon={isTemporary ? "shield.fill" : "shield"}
+            onPress={() => router.setParams({ temporary: (!isTemporary).toString() })}
+          />
+        }
       />
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-    </ThemedKeyboardAvoidingView>
+      <ChatRoot
+        key={chatInstanceKey}
+        temporary={isTemporary}
+        onHasTranscriptChange={setHasTranscript}
+      />
+    </>
   );
 };
-
-const styles = StyleSheet.create((theme) => ({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  content: {
-    flex: 1,
-  },
-  errorText: {
-    color: "#FF5A5A",
-    marginHorizontal: 20,
-    marginBottom: 8,
-    fontSize: 12,
-  },
-}));

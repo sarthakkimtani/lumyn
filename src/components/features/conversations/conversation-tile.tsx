@@ -11,12 +11,14 @@ type ConversationTileProps = {
   conversation: ConversationRow;
   isFirst?: boolean;
   isLast?: boolean;
+  onPress?: (conversation: ConversationRow) => void;
 };
 
 export const ConversationTile = ({
   conversation,
   isFirst = false,
   isLast = false,
+  onPress,
 }: ConversationTileProps) => {
   return (
     <Pressable
@@ -26,6 +28,7 @@ export const ConversationTile = ({
         isLast && styles.tileLast,
         pressed && styles.tilePressed,
       ]}
+      onPress={() => onPress?.(conversation)}
     >
       <View style={styles.iconContainer}>
         <ThemedSymbolView name="text.bubble.fill" themeColor="primary" size={20} />

@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 
@@ -13,6 +13,24 @@ export const useQueries = () => {
 
   const fetchConversations = async () => {
     return await db.select().from(conversations).orderBy(desc(conversations.createdAt));
+  };
+
+  const fetchConversationById = async (conversationId: string) => {
+    const rows = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, conversationId))
+      .limit(1);
+
+    return rows[0] ?? null;
+  };
+
+  const fetchTranscriptEntriesByConversationId = async (conversationId: string) => {
+    return await db
+      .select()
+      .from(transcriptEntries)
+      .where(eq(transcriptEntries.conversationId, conversationId))
+      .orderBy(asc(transcriptEntries.createdAt), sql`rowid`);
   };
 
   const upsertConversation = async (insertEntry: ConversationInsert) => {
@@ -32,5 +50,11 @@ export const useQueries = () => {
     return res.changes;
   };
 
-  return { fetchConversations, upsertConversation, upsertTranscriptEntries };
+  return {
+    fetchConversations,
+    fetchConversationById,
+    fetchTranscriptEntriesByConversationId,
+    upsertConversation,
+    upsertTranscriptEntries,
+  };
 };

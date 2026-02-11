@@ -27,6 +27,7 @@ export const AppLayout = () => {
         name="conversations"
         options={{ title: "Conversations", headerBackButtonDisplayMode: "minimal" }}
       />
+      <Stack.Screen name="chat/[id]" />
     </Stack>
   );
 };
