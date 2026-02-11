@@ -69,7 +69,9 @@ export const Conversations = () => {
       ) : (
         <ConversationsList
           data={rows}
-          onConversationPress={(conversation) => router.replace(`/chat/${conversation.id}`)}
+          onConversationPress={(conversation) =>
+            router.dismissTo({ pathname: "/", params: { id: conversation.id } })
+          }
         />
       )}
     </View>

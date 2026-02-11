@@ -25,7 +25,7 @@ export const useQueries = () => {
     return rows[0] ?? null;
   };
 
-  const fetchTranscriptEntriesByConversationId = async (conversationId: string) => {
+  const fetchTranscriptByConversationId = async (conversationId: string) => {
     return await db
       .select()
       .from(transcriptEntries)
@@ -53,7 +53,7 @@ export const useQueries = () => {
   return {
     fetchConversations,
     fetchConversationById,
-    fetchTranscriptEntriesByConversationId,
+    fetchTranscriptByConversationId,
     upsertConversation,
     upsertTranscriptEntries,
   };

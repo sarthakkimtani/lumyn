@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Platform, Text, View } from "react-native";
 import { KeyboardAvoidingView, KeyboardController } from "react-native-keyboard-controller";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
@@ -16,14 +16,12 @@ type ChatProps = {
   temporary?: boolean;
   conversationId?: string | null;
   initialTranscript?: ModelTranscript | null;
-  onHasTranscriptChange?: (hasTranscript: boolean) => void;
 };
 
 export const ChatRoot = ({
   temporary = false,
   conversationId = null,
   initialTranscript = null,
-  onHasTranscriptChange,
 }: ChatProps) => {
   const [message, setMessage] = useState("");
 
@@ -32,10 +30,6 @@ export const ChatRoot = ({
     initialTranscript,
     temporary,
   });
-
-  useEffect(() => {
-    onHasTranscriptChange?.(hasTranscript);
-  }, [hasTranscript, onHasTranscriptChange]);
 
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
