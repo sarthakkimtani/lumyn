@@ -1,25 +1,24 @@
-import { useIsFocused } from "@react-navigation/native";
-import { router } from "expo-router";
+import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Text, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { ConversationsList } from "@/components/features/conversations/conversations-list";
 import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
+
 import { conversations } from "@/db/schema";
 import { useQueries } from "@/hooks/use-queries";
 
 type ConversationRow = typeof conversations.$inferSelect;
 
 export const Conversations = () => {
-  const isFocused = useIsFocused();
-  const { fetchConversations } = useQueries();
+  const { deleteConversationById, fetchConversations } = useQueries();
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const [rows, setRows] = useState<ConversationRow[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isFocused) return;
     let cancelled = false;
 
     const loadConversations = async () => {
@@ -43,38 +42,52 @@ export const Conversations = () => {
     return () => {
       cancelled = true;
     };
-  }, [fetchConversations, isFocused]);
+  }, [fetchConversations]);
+
+  const toggleEditing = () => setIsEditing((prev) => !prev);
+
+  const handleRowDeletion = async (id: string) => {
+    try {
+      await deleteConversationById(id);
+      setRows(rows.filter((row) => row.id !== id));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Could not delete conversation";
+      Alert.alert("Error", message);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" />
-        </View>
-      ) : error ? (
-        <View style={styles.stateContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      ) : rows.length === 0 ? (
-        <View style={styles.stateContainer}>
-          <ThemedSymbolView
-            name="bubble.left.and.text.bubble.right"
-            themeColor="textSecondary"
-            size={64}
-            style={styles.emptyIcon}
-          />
-          <Text style={styles.emptyTitle}>No conversations yet</Text>
-          <Text style={styles.emptySubtitle}>Start a chat to see it here.</Text>
-        </View>
-      ) : (
-        <ConversationsList
-          data={rows}
-          onConversationPress={(conversation) =>
-            router.dismissTo({ pathname: "/", params: { id: conversation.id } })
-          }
-        />
-      )}
-    </View>
+    <>
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Button onPress={toggleEditing}>
+          <Stack.Toolbar.Label>{isEditing ? "Done" : "Edit"}</Stack.Toolbar.Label>
+        </Stack.Toolbar.Button>
+      </Stack.Toolbar>
+      <View style={styles.container}>
+        {loading ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" />
+          </View>
+        ) : error ? (
+          <View style={styles.stateContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : rows.length === 0 ? (
+          <View style={styles.stateContainer}>
+            <ThemedSymbolView
+              name="bubble.left.and.text.bubble.right"
+              themeColor="textSecondary"
+              size={64}
+              style={styles.emptyIcon}
+            />
+            <Text style={styles.emptyTitle}>No conversations yet</Text>
+            <Text style={styles.emptySubtitle}>Start a chat to see it here.</Text>
+          </View>
+        ) : (
+          <ConversationsList onDelete={handleRowDeletion} editing={isEditing} data={rows} />
+        )}
+      </View>
+    </>
   );
 };
 

@@ -1,7 +1,9 @@
+import { router } from "expo-router";
 import { SectionList, Text, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-import { ConversationTile } from "@/components/features/conversations/conversation-tile";
+import { AnimatedRow } from "@/components/features/conversations/animated-row";
+
 import { conversations } from "@/db/schema";
 import { type DateSection, getDateSection } from "@/utils/date";
 
@@ -35,10 +37,12 @@ const buildSections = (rows: ConversationRow[]): ConversationSection[] => {
 
 export const ConversationsList = ({
   data,
-  onConversationPress,
+  editing,
+  onDelete,
 }: {
   data: ConversationRow[];
-  onConversationPress?: (conversation: ConversationRow) => void;
+  editing: boolean;
+  onDelete?: (id: string) => Promise<void>;
 }) => {
   const sections = buildSections(data);
 
@@ -56,11 +60,13 @@ export const ConversationsList = ({
         const isFirst = index === 0;
         const isLast = index === section.data.length - 1;
         return (
-          <ConversationTile
-            conversation={item}
+          <AnimatedRow
+            item={item}
+            editing={editing}
             isFirst={isFirst}
             isLast={isLast}
-            onPress={onConversationPress}
+            onDelete={onDelete}
+            onPress={() => router.dismissTo({ pathname: "/", params: { id: item.id } })}
           />
         );
       }}

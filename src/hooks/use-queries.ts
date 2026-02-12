@@ -11,6 +11,10 @@ export const useQueries = () => {
   const expoDb = useSQLiteContext();
   const db = drizzle(expoDb);
 
+  const deleteConversationById = async (id: string) => {
+    return await db.delete(conversations).where(eq(conversations.id, id));
+  };
+
   const fetchConversations = async () => {
     return await db.select().from(conversations).orderBy(desc(conversations.createdAt));
   };
@@ -51,6 +55,7 @@ export const useQueries = () => {
   };
 
   return {
+    deleteConversationById,
     fetchConversations,
     fetchConversationById,
     fetchTranscriptByConversationId,

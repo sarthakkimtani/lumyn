@@ -48,6 +48,7 @@ export const ConversationTile = ({
 
 const styles = StyleSheet.create((theme) => ({
   tile: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     paddingLeft: 16,
