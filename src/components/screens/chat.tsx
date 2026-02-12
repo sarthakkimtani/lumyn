@@ -30,9 +30,12 @@ export const Chat = () => {
   const [chatInstanceKey, setChatInstanceKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasTranscript, setHasTranscript] = useState(false);
   const [initialTranscript, setInitialTranscript] = useState<ModelTranscript | null>(null);
 
-  const hasTranscript = Boolean(initialTranscript?.entries.some((e) => e.role !== "instructions"));
+  useEffect(() => {
+    setHasTranscript((initialTranscript?.entries?.length ?? 0) > 0);
+  }, [initialTranscript]);
 
   useEffect(() => {
     let cancelled = false;
@@ -123,6 +126,7 @@ export const Chat = () => {
           temporary={isTemporary}
           conversationId={conversationId}
           initialTranscript={initialTranscript}
+          onTranscriptChange={(t) => setHasTranscript((t.entries?.length ?? 0) > 0)}
         />
       )}
     </>
