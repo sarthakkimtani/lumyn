@@ -1,12 +1,13 @@
 import { Text, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
+import { ResponseFooter } from "@/components/features/chat/response-footer";
 import { MarkdownRenderer } from "@/components/features/markdown/markdown-renderer";
 import { ThemedGlassView } from "@/components/util/themed-glass-view";
 
 import { TranscriptEntry } from "@/modules/local-llm";
 
-export const ChatListItem = ({ entry }: { entry: TranscriptEntry }) => {
+export const ChatListItem = ({ entry, isLast }: { entry: TranscriptEntry; isLast?: boolean }) => {
   if (entry.role === "instructions") return null;
   if (entry.role === "prompt") {
     return (
@@ -19,8 +20,9 @@ export const ChatListItem = ({ entry }: { entry: TranscriptEntry }) => {
   }
 
   return (
-    <View style={styles.assistantRow}>
+    <View style={styles.assistantContainer}>
       <MarkdownRenderer markdown={entry.text} />
+      {isLast && <ResponseFooter entry={entry} />}
     </View>
   );
 };
@@ -43,9 +45,8 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 16,
     lineHeight: 21,
   },
-  assistantRow: {
-    width: "100%",
-    gap: 4,
+  assistantContainer: {
+    gap: 20,
     paddingHorizontal: 10,
     paddingVertical: 2,
     marginVertical: 15,

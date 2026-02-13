@@ -38,9 +38,9 @@ export const ChatList = ({ entries, loading, streamingContent }: ChatListProps) 
         onContentSizeChange={onContentSizeChange}
         showsVerticalScrollIndicator={false}
         onScroll={({ nativeEvent }) => onScroll(nativeEvent)}
-        renderItem={({ item }) =>
+        renderItem={({ item, index }) =>
           item.type === "entry" ? (
-            <ChatListItem entry={item.entry} />
+            <ChatListItem entry={item.entry} isLast={index === rows.length - 1} />
           ) : (
             <StreamingItem content={streamingContent} />
           )
