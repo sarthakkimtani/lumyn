@@ -12,7 +12,7 @@ enum LocalLLMTranscriptHelper {
         text: String,
         tool: String? = nil
     ) -> TranscriptEntry {
-        var entry = TranscriptEntry()
+        let entry = TranscriptEntry()
         entry.id = UUID().uuidString
         entry.role = role
         entry.text = text
@@ -20,8 +20,9 @@ enum LocalLLMTranscriptHelper {
         return entry
     }
 
-    static func defaultModelTranscript(systemPrompt: String) -> ModelTranscript {
-        var transcript = ModelTranscript()
+    static func defaultModelTranscript(systemPrompt: String) -> ModelTranscript
+    {
+        let transcript = ModelTranscript()
         transcript.entries = [
             makeTranscriptEntry(role: .instructions, text: systemPrompt)
         ]
@@ -36,7 +37,7 @@ enum LocalLLMTranscriptHelper {
             return transcript
         }
 
-        var updatedTranscript = transcript
+        let updatedTranscript = transcript
         updatedTranscript.entries.insert(
             makeTranscriptEntry(role: .instructions, text: systemPrompt),
             at: 0
@@ -54,10 +55,12 @@ enum LocalLLMTranscriptHelper {
         }
 
         if onlyInstructions {
-            let instructionsFromTranscript = transcriptRecord.entries.first(where: {
-                $0.role == .instructions
-            })?.text.trimmingCharacters(in: .whitespacesAndNewlines)
-            let instructions = instructionsFromTranscript?.isEmpty == false
+            let instructionsFromTranscript = transcriptRecord.entries.first(
+                where: {
+                    $0.role == .instructions
+                })?.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let instructions =
+                instructionsFromTranscript?.isEmpty == false
                 ? instructionsFromTranscript ?? systemPrompt
                 : systemPrompt
             return LanguageModelSession(instructions: instructions)

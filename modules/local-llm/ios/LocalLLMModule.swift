@@ -92,7 +92,7 @@ public class LocalLLMModule: Module {
     }
 
     private func appendTranscriptEntry(_ entry: TranscriptEntry, to sessionId: String) {
-        var transcript = transcriptForSession(sessionId: sessionId)
+        let transcript = transcriptForSession(sessionId: sessionId)
         transcript.entries.append(entry)
         storeTranscript(transcript, for: sessionId)
     }

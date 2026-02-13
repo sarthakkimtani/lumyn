@@ -118,7 +118,7 @@ export const MarkdownRenderer = ({ markdown }: { markdown: string }) => {
   return (
     <ThemedEnrichedMarkdownText
       markdown={markdown}
-      isSelectable
+      selectable
       onLinkPress={(event) => Linking.openURL(event.url)}
     />
   );
