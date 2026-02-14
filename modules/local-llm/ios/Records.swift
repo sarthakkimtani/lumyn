@@ -1,9 +1,17 @@
 import ExpoModulesCore
 import Foundation
 
+enum ModelAvailability: String, Enumerable {
+    case available
+    case deviceNotEligible
+    case appleIntelligenceNotEnabled
+    case modelNotReady
+    case unavailable
+    case incorrectIOSVersion
+}
+
 struct LocalModelAvailability: Record {
-    @Field var isAvailable: Bool = false
-    @Field var reason: String? = nil
+    @Field var available: ModelAvailability = .unavailable
     @Field var osVersion: String =
         ProcessInfo.processInfo.operatingSystemVersionString
 }

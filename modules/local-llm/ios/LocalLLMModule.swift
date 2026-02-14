@@ -43,8 +43,7 @@ public class LocalLLMModule: Module {
         let availability = LocalModelAvailability()
 
         guard #available(iOS 26.0, *) else {
-            availability.isAvailable = false
-            availability.reason = LocalLLMErrorMessage.requiresIOS26
+            availability.available = .incorrectIOSVersion
             return availability
         }
 
@@ -52,19 +51,15 @@ public class LocalLLMModule: Module {
 
         switch systemModel.availability {
         case .available:
-            availability.isAvailable = true
+            availability.available = .available
         case .unavailable(.deviceNotEligible):
-            availability.isAvailable = false
-            availability.reason = "Device is not eligible"
+            availability.available = .deviceNotEligible
         case .unavailable(.appleIntelligenceNotEnabled):
-            availability.isAvailable = false
-            availability.reason = "Apple Intelligence is not enabled"
+            availability.available = .appleIntelligenceNotEnabled
         case .unavailable(.modelNotReady):
-            availability.isAvailable = false
-            availability.reason = "Model is not ready"
+            availability.available = .modelNotReady
         case .unavailable:
-            availability.isAvailable = false
-            availability.reason = "Unknown"
+            availability.available = .unavailable
         }
 
         return availability
@@ -87,11 +82,17 @@ public class LocalLLMModule: Module {
         return fallbackTranscript
     }
 
-    private func storeTranscript(_ transcript: ModelTranscript, for sessionId: String) {
+    private func storeTranscript(
+        _ transcript: ModelTranscript,
+        for sessionId: String
+    ) {
         sessionTranscripts[sessionId] = transcript
     }
 
-    private func appendTranscriptEntry(_ entry: TranscriptEntry, to sessionId: String) {
+    private func appendTranscriptEntry(
+        _ entry: TranscriptEntry,
+        to sessionId: String
+    ) {
         let transcript = transcriptForSession(sessionId: sessionId)
         transcript.entries.append(entry)
         storeTranscript(transcript, for: sessionId)
@@ -101,7 +102,8 @@ public class LocalLLMModule: Module {
         -> LocalSessionDetails
     {
         let sessionDetails = LocalSessionDetails()
-        let baseTranscript = request.transcript
+        let baseTranscript =
+            request.transcript
             ?? LocalLLMTranscriptHelper.defaultModelTranscript(
                 systemPrompt: systemPrompt
             )

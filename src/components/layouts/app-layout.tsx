@@ -1,18 +1,30 @@
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useUnistyles } from "react-native-unistyles";
 
-import { systemPrompt } from "@/config/prompt";
-import LocalLLMModule from "@/modules/local-llm/src/LocalLLMModule";
+import { Unavailable } from "@/components/screens/unavailable";
+
+import { systemPrompt } from "@/constants/prompt";
+import LocalLLMModule, { ModelAvailability } from "@/modules/local-llm";
 
 export const AppLayout = () => {
   const { theme } = useUnistyles();
+  const [availability, setAvailability] = useState<ModelAvailability | null>(null);
 
+  // TODO: Figure out if useEffect should be used here or not
   useEffect(() => {
-    LocalLLMModule.setSystemPrompt(systemPrompt);
+    const response = LocalLLMModule.checkAvailability();
+    setAvailability(response.available);
+
+    if (response.available === "available") {
+      LocalLLMModule.setSystemPrompt(systemPrompt);
+    }
     SplashScreen.hideAsync();
   }, []);
+
+  if (availability == null) return null;
+  if (availability !== "available") return <Unavailable reason={availability} />;
 
   return (
     <Stack

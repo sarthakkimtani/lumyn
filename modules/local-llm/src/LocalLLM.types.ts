@@ -1,6 +1,13 @@
+export type ModelAvailability =
+  | "available"
+  | "deviceNotEligible"
+  | "appleIntelligenceNotEnabled"
+  | "modelNotReady"
+  | "unavailable"
+  | "incorrectIOSVersion";
+
 export type LocalModelAvailability = {
-  isAvailable: boolean;
-  reason: string | null;
+  available: ModelAvailability;
   osVersion: string;
 };
 
