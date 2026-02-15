@@ -20,22 +20,18 @@ export const Unavailable = ({ reason }: { reason: ModelAvailability }) => {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {/* Icon */}
         <View style={styles.iconCircle}>
           <ThemedSymbolView size={32} name={config.icon} themeColor="error" />
         </View>
 
-        {/* Text */}
         <Text style={styles.title}>{config.title}</Text>
         <Text style={styles.description}>{config.description}</Text>
 
-        {/* Detail row */}
         <View style={styles.detailRow}>
           <ThemedSymbolView size={13} name={config.detail.icon} themeColor="sectionHeader" />
           <Text style={styles.detailText}>{config.detail.label}</Text>
         </View>
 
-        {/* Settings button */}
         {config.showSettingsButton && (
           <Pressable
             style={({ pressed }) => [
@@ -63,7 +59,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   content: {
     alignItems: "center",
-    maxWidth: 320,
   },
   iconCircle: {
     width: 64,

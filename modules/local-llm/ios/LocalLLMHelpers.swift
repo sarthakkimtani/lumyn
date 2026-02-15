@@ -63,11 +63,23 @@ enum LocalLLMTranscriptHelper {
                 instructionsFromTranscript?.isEmpty == false
                 ? instructionsFromTranscript ?? systemPrompt
                 : systemPrompt
-            return LanguageModelSession(instructions: instructions)
+            return LanguageModelSession(
+                model: .init(
+                    useCase: .general,
+                    guardrails: .permissiveContentTransformations
+                ),
+                instructions: instructions
+            )
         }
 
         let transcript = buildNativeTranscript(from: transcriptRecord)
-        return LanguageModelSession(transcript: transcript)
+        return LanguageModelSession(
+            model: .init(
+                useCase: .general,
+                guardrails: .permissiveContentTransformations
+            ),
+            transcript: transcript
+        )
     }
 
     @available(iOS 26.0, *)

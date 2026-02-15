@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 
 const IconButton = ({ name, onPress }: { name: SFSymbol; onPress: () => void }) => {
   return (
-    <Pressable onPress={onPress}>
+    <Pressable style={({ pressed }) => [pressed && styles.buttonPressed]} onPress={onPress}>
       <ThemedSymbolView size={21} weight="medium" name={name} themeColor="textSecondary" />
     </Pressable>
   );
@@ -54,5 +54,8 @@ const styles = StyleSheet.create({
     gap: 18,
     borderRadius: 20,
     padding: 10,
+  },
+  buttonPressed: {
+    opacity: 0.4,
   },
 });
