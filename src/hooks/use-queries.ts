@@ -2,9 +2,9 @@ import { asc, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 
-import { conversations, transcriptEntries } from "@/db/schema";
+import { conversations, messages } from "@/db/schema";
 
-export type TranscriptEntryInsert = typeof transcriptEntries.$inferInsert;
+export type MessageInsert = typeof messages.$inferInsert;
 export type ConversationInsert = typeof conversations.$inferInsert;
 
 export const useQueries = () => {
@@ -29,12 +29,12 @@ export const useQueries = () => {
     return rows[0] ?? null;
   };
 
-  const fetchTranscriptByConversationId = async (conversationId: string) => {
+  const fetchMessagesByConversationId = async (conversationId: string) => {
     return await db
       .select()
-      .from(transcriptEntries)
-      .where(eq(transcriptEntries.conversationId, conversationId))
-      .orderBy(asc(transcriptEntries.createdAt), sql`rowid`);
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(asc(messages.createdAt), sql`rowid`);
   };
 
   const upsertConversation = async (insertEntry: ConversationInsert) => {
@@ -48,9 +48,9 @@ export const useQueries = () => {
     return res.changes;
   };
 
-  const upsertTranscriptEntries = async (entries: TranscriptEntryInsert[]) => {
+  const upsertMessages = async (entries: MessageInsert[]) => {
     if (!entries.length) return;
-    const res = await db.insert(transcriptEntries).values(entries).onConflictDoNothing();
+    const res = await db.insert(messages).values(entries).onConflictDoNothing();
     return res.changes;
   };
 
@@ -58,8 +58,8 @@ export const useQueries = () => {
     deleteConversationById,
     fetchConversations,
     fetchConversationById,
-    fetchTranscriptByConversationId,
+    fetchMessagesByConversationId,
     upsertConversation,
-    upsertTranscriptEntries,
+    upsertMessages,
   };
 };

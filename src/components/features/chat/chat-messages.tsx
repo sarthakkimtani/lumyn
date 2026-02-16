@@ -2,35 +2,21 @@ import { FlashList } from "@shopify/flash-list";
 import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-import { ChatListItem } from "@/components/features/chat/chat-list-item";
+import { ChatMessage } from "@/components/features/chat/chat-message";
 import { ScrollDownButton } from "@/components/features/chat/scroll-down-button";
-import { StreamingItem } from "@/components/features/chat/streaming-item";
-import { ChatRow, useChatList } from "@/hooks/use-chat-list";
 
-import { TranscriptEntry } from "@/modules/local-llm";
+import { useChatList } from "@/hooks/use-chat-list";
+import { AgentMessage } from "@/lib/agent";
 
-type ChatListProps = {
-  entries: TranscriptEntry[];
-  loading: boolean;
-  streamingContent: string;
-};
-
-export const ChatList = ({ entries, loading, streamingContent }: ChatListProps) => {
-  const {
-    listRef,
-    rows,
-    showScrollDownButton,
-    scrollToEnd,
-    onLayout,
-    onContentSizeChange,
-    onScroll,
-  } = useChatList({ entries, loading });
+export const ChatMessages = ({ messages }: { messages: AgentMessage[] }) => {
+  const { listRef, showScrollDownButton, scrollToEnd, onLayout, onContentSizeChange, onScroll } =
+    useChatList({ messages });
 
   return (
     <View style={{ flex: 1 }}>
-      <FlashList<ChatRow>
+      <FlashList<AgentMessage>
         ref={listRef}
-        data={rows}
+        data={messages}
         style={styles.container}
         contentContainerStyle={styles.content}
         keyExtractor={(item) => item.id}
@@ -38,13 +24,9 @@ export const ChatList = ({ entries, loading, streamingContent }: ChatListProps) 
         onContentSizeChange={onContentSizeChange}
         showsVerticalScrollIndicator={false}
         onScroll={({ nativeEvent }) => onScroll(nativeEvent)}
-        renderItem={({ item, index }) =>
-          item.type === "entry" ? (
-            <ChatListItem entry={item.entry} isLast={index === rows.length - 1} />
-          ) : (
-            <StreamingItem content={streamingContent} />
-          )
-        }
+        renderItem={({ item, index }) => (
+          <ChatMessage message={item} isLast={index === messages.length - 1} />
+        )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
       <ScrollDownButton visible={showScrollDownButton} onPress={scrollToEnd} />

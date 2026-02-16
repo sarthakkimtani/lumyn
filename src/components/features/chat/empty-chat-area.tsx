@@ -31,14 +31,14 @@ const SUGGESTIONS = [
 
 export const EmptyChatArea = ({
   onSuggestionPress,
-  isTemporaryChat,
+  temporary,
 }: {
   onSuggestionPress?: (prompt: string) => void;
-  isTemporaryChat: boolean;
+  temporary: boolean;
 }) => {
   return (
     <View style={styles.chatArea}>
-      {isTemporaryChat ? (
+      {temporary ? (
         <ThemedSymbolView style={styles.logo} name="lock.shield.fill" themeColor="primary" />
       ) : (
         <Image
@@ -47,9 +47,9 @@ export const EmptyChatArea = ({
           contentFit="fill"
         />
       )}
-      <Text style={styles.title}>{isTemporaryChat ? "Temporary Chat" : "How can I help?"}</Text>
+      <Text style={styles.title}>{temporary ? "Temporary Chat" : "How can I help?"}</Text>
       <Text style={styles.subtitle}>
-        {isTemporaryChat
+        {temporary
           ? "Messages in this chat will not be saved"
           : "Start with a prompt or query to get started."}
       </Text>

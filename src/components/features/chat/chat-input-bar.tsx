@@ -1,3 +1,4 @@
+import { ChatStatus } from "ai";
 import { GlassContainer, GlassView } from "expo-glass-effect";
 import { TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,21 +12,14 @@ const ThemedTextInput = withUnistyles(TextInput, (theme) => ({
 
 type ChatInputBarProps = {
   value: string;
-  loading: boolean;
+  status: ChatStatus;
   onChangeText: (text: string) => void;
   onSend: () => void;
-  disabled?: boolean;
 };
 
-export const ChatInputBar = ({
-  value,
-  loading,
-  onChangeText,
-  onSend,
-  disabled = false,
-}: ChatInputBarProps) => {
+export const ChatInputBar = ({ value, status, onChangeText, onSend }: ChatInputBarProps) => {
   const insets = useSafeAreaInsets();
-  const canSend = value.trim().length > 0 && !loading && !disabled;
+  const isDisabled = status !== "ready";
 
   return (
     <GlassContainer style={[styles.inputContainer, { marginBottom: insets.bottom }]}>
@@ -37,10 +31,10 @@ export const ChatInputBar = ({
           maxLength={2000}
           value={value}
           onChangeText={onChangeText}
-          editable={!disabled}
+          editable={!isDisabled}
         />
       </GlassView>
-      <SendButton loading={loading} disabled={!canSend} onSend={onSend} />
+      <SendButton loading={status === "streaming"} disabled={isDisabled} onSend={onSend} />
     </GlassContainer>
   );
 };

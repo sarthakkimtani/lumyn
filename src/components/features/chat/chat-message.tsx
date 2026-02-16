@@ -1,19 +1,30 @@
 import { Text, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-import { ResponseFooter } from "@/components/features/chat/response-footer";
+import { AssistantFooter } from "@/components/features/chat/assistant-footer";
 import { MarkdownRenderer } from "@/components/features/markdown/markdown-renderer";
 import { ThemedGlassView } from "@/components/util/themed-glass-view";
 
-import { TranscriptEntry } from "@/modules/local-llm";
+import { AgentMessage } from "@/lib/agent";
 
-export const ChatListItem = ({ entry, isLast }: { entry: TranscriptEntry; isLast?: boolean }) => {
-  if (entry.role === "instructions") return null;
-  if (entry.role === "prompt") {
+export const ChatMessage = ({ message, isLast }: { message: AgentMessage; isLast?: boolean }) => {
+  const textContent = message.parts
+    .filter((p) => p.type === "text")
+    .map((p) => p.text ?? "")
+    .join("");
+
+  if (message.role === "system") return null;
+  if (message.role === "user") {
     return (
       <View style={styles.userRow}>
         <ThemedGlassView style={styles.userBubble} themeColor="primary">
-          <Text style={styles.userText}>{entry.text}</Text>
+          {message.parts.map((part, idx) =>
+            part.type === "text" ? (
+              <Text key={idx} style={styles.userText}>
+                {part.text}
+              </Text>
+            ) : null,
+          )}
         </ThemedGlassView>
       </View>
     );
@@ -21,8 +32,8 @@ export const ChatListItem = ({ entry, isLast }: { entry: TranscriptEntry; isLast
 
   return (
     <View style={styles.assistantContainer}>
-      <MarkdownRenderer markdown={entry.text} />
-      {isLast && <ResponseFooter entry={entry} />}
+      <MarkdownRenderer markdown={textContent} />
+      {isLast && <AssistantFooter message={message} />}
     </View>
   );
 };

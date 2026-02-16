@@ -1,93 +1,99 @@
+import { useChat } from "@ai-sdk/react";
+import { DirectChatTransport } from "ai";
+import * as Crypto from "expo-crypto";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
-import { StyleSheet } from "react-native-unistyles";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
-import { ChatRoot } from "@/components/features/chat/chat-root";
+import { ChatInputBar } from "@/components/features/chat/chat-input-bar";
+import { ChatMessages } from "@/components/features/chat/chat-messages";
+import { EmptyChatArea } from "@/components/features/chat/empty-chat-area";
 
-import { transcriptEntries } from "@/db/schema";
 import { useQueries } from "@/hooks/use-queries";
-import { ModelTranscript } from "@/modules/local-llm";
+import { agent, AgentMessage } from "@/lib/agent";
+import { extractTextFromMessage, getChatTitle } from "@/utils/chat";
 
-type TranscriptEntryRow = typeof transcriptEntries.$inferSelect;
-
-const buildTranscript = (entries: TranscriptEntryRow[]): ModelTranscript => ({
-  entries: entries.map((entry) => ({
-    id: entry.id,
-    role: entry.role,
-    text: entry.text,
-    tool: null,
-  })),
-});
+const ThemedKeyboardAvoidingView = withUnistyles(KeyboardAvoidingView);
 
 export const Chat = () => {
+  const [input, setInput] = useState("");
   const { temporary, id } = useLocalSearchParams<{ temporary?: string; id?: string }>();
-  const { fetchConversationById, fetchTranscriptByConversationId } = useQueries();
+  const [chatId, setChatId] = useState(() => id ?? Crypto.randomUUID());
+  const isTemporary = temporary === "true" && !id;
 
-  const conversationId = typeof id === "string" && id.length > 0 ? id : null;
-  const isTemporary = temporary === "true" && !conversationId;
+  const { upsertConversation, upsertMessages, fetchMessagesByConversationId } = useQueries();
 
-  const [chatInstanceKey, setChatInstanceKey] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasTranscript, setHasTranscript] = useState(false);
-  const [initialTranscript, setInitialTranscript] = useState<ModelTranscript | null>(null);
+  const isTemporaryRef = useRef(isTemporary);
+  isTemporaryRef.current = isTemporary;
+
+  const chatIdRef = useRef(chatId);
+  chatIdRef.current = chatId;
+
+  const persistChat = useCallback(
+    async (msgs: AgentMessage[]) => {
+      if (isTemporaryRef.current || msgs.length === 0) return;
+
+      const currentChatId = chatIdRef.current;
+      const firstUserMessage = msgs.find((m) => m.role === "user");
+      const title = firstUserMessage
+        ? getChatTitle(extractTextFromMessage(firstUserMessage))
+        : "Untitled chat";
+
+      await upsertConversation({ id: currentChatId, title });
+      await upsertMessages(
+        msgs
+          .filter((m) => m.role === "user" || m.role === "assistant")
+          .map((m) => ({
+            id: m.id,
+            conversationId: currentChatId,
+            role: m.role as "user" | "assistant",
+            text: extractTextFromMessage(m),
+          })),
+      );
+    },
+    [upsertConversation, upsertMessages],
+  );
+
+  const { messages, sendMessage, setMessages, status, error } = useChat<AgentMessage>({
+    id: chatId,
+    transport: new DirectChatTransport({ agent }),
+    onFinish: ({ messages: finalMessages }) => persistChat(finalMessages),
+  });
 
   useEffect(() => {
-    setHasTranscript((initialTranscript?.entries?.length ?? 0) > 0);
-  }, [initialTranscript]);
+    if (!id) return;
+    setChatId(id);
 
-  useEffect(() => {
-    let cancelled = false;
-    if (!conversationId) {
-      setLoading(false);
-      setError(null);
-      setInitialTranscript(null);
-      return;
-    }
+    const loadMessages = async () => {
+      const rows = await fetchMessagesByConversationId(id);
+      if (rows.length === 0) return;
 
-    const hydrate = async () => {
-      setLoading(true);
-      setError(null);
+      const restored: AgentMessage[] = rows.map((row) => ({
+        id: row.id,
+        role: row.role as "user" | "assistant",
+        parts: [{ type: "text" as const, text: row.text }],
+      }));
 
-      try {
-        const [conversation, entries] = await Promise.all([
-          fetchConversationById(conversationId),
-          fetchTranscriptByConversationId(conversationId),
-        ]);
-        if (cancelled) return;
-
-        if (!conversation) {
-          setInitialTranscript(null);
-          setError("Conversation not found");
-          return;
-        }
-
-        setInitialTranscript(buildTranscript(entries));
-      } catch (e) {
-        if (cancelled) return;
-        setInitialTranscript(null);
-        setError(e instanceof Error ? e.message : "Failed to load conversation");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      setMessages(restored);
     };
 
-    void hydrate();
-    return () => {
-      cancelled = true;
-    };
-  }, [conversationId, fetchConversationById, fetchTranscriptByConversationId]);
+    void loadMessages();
+  }, [id, fetchMessagesByConversationId, setMessages]);
+
+  const submit = async () => {
+    const text = input.trim();
+    if (!text) return;
+
+    setInput("");
+    sendMessage({ text });
+  };
 
   const startNewChat = () => {
-    router.setParams({ temporary: "false", id: "" });
-    setChatInstanceKey((prev) => prev + 1);
-    setInitialTranscript(null);
+    setChatId(Crypto.randomUUID());
+    router.setParams({ id: "" });
   };
-
-  const toggleTemp = () => {
-    router.setParams({ temporary: (!isTemporary).toString() });
-  };
+  const toggleTemporaryMode = () => router.setParams({ temporary: (!isTemporary).toString() });
 
   return (
     <>
@@ -101,34 +107,32 @@ export const Chat = () => {
 
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
-          hidden={!hasTranscript}
+          hidden={messages.length === 0}
           icon="square.and.pencil"
           onPress={startNewChat}
         />
         <Stack.Toolbar.Button
-          hidden={hasTranscript}
+          hidden={messages.length > 0}
           icon={isTemporary ? "shield.fill" : "shield"}
-          onPress={toggleTemp}
+          onPress={toggleTemporaryMode}
         />
       </Stack.Toolbar>
 
-      {loading ? (
-        <View style={[styles.container, styles.center]}>
-          <ActivityIndicator size="large" />
+      <ThemedKeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={100}
+      >
+        <View style={{ flex: 1 }}>
+          {messages.length > 0 ? (
+            <ChatMessages messages={messages} />
+          ) : (
+            <EmptyChatArea temporary={isTemporary} onSuggestionPress={setInput} />
+          )}
         </View>
-      ) : error ? (
-        <View style={[styles.container, styles.center]}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      ) : (
-        <ChatRoot
-          key={conversationId ?? `new-${chatInstanceKey}`}
-          temporary={isTemporary}
-          conversationId={conversationId}
-          initialTranscript={initialTranscript}
-          onTranscriptChange={(t) => setHasTranscript((t.entries?.length ?? 0) > 0)}
-        />
-      )}
+        <ChatInputBar value={input} status={status} onChangeText={setInput} onSend={submit} />
+        {error ? <Text style={styles.errorText}>{error.message}</Text> : null}
+      </ThemedKeyboardAvoidingView>
     </>
   );
 };
