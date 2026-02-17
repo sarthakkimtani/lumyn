@@ -3,12 +3,7 @@ import { StyleSheet } from "react-native-unistyles";
 
 import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
 
-import { availabilityConfig } from "@/constants/availability";
-import { ModelAvailability } from "@/modules/local-llm";
-
-export const Unavailable = ({ reason }: { reason: ModelAvailability }) => {
-  const config = availabilityConfig[reason];
-
+export const Unavailable = () => {
   const openSettings = async () => {
     try {
       await Linking.openSettings();
@@ -21,29 +16,27 @@ export const Unavailable = ({ reason }: { reason: ModelAvailability }) => {
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconCircle}>
-          <ThemedSymbolView size={32} name={config.icon} themeColor="error" />
+          <ThemedSymbolView size={32} name="exclamationmark.circle" themeColor="error" />
         </View>
 
-        <Text style={styles.title}>{config.title}</Text>
-        <Text style={styles.description}>{config.description}</Text>
+        <Text style={styles.title}>Unavailable</Text>
+        <Text style={styles.description}>
+          Lumyn can&apos;t access the on-device model right now. Try enabling Apple Intelligence on
+          this device.
+        </Text>
 
         <View style={styles.detailRow}>
-          <ThemedSymbolView size={13} name={config.detail.icon} themeColor="sectionHeader" />
-          <Text style={styles.detailText}>{config.detail.label}</Text>
+          <ThemedSymbolView size={13} name="questionmark.circle" themeColor="sectionHeader" />
+          <Text style={styles.detailText}>Unknown issue</Text>
         </View>
 
-        {config.showSettingsButton && (
-          <Pressable
-            style={({ pressed }) => [
-              styles.settingsButton,
-              pressed && styles.settingsButtonPressed,
-            ]}
-            onPress={openSettings}
-          >
-            <Text style={styles.settingsButtonText}>Open Settings</Text>
-            <ThemedSymbolView size={13} name="arrow.up.forward" themeColor="primary" />
-          </Pressable>
-        )}
+        <Pressable
+          style={({ pressed }) => [styles.settingsButton, pressed && styles.settingsButtonPressed]}
+          onPress={openSettings}
+        >
+          <Text style={styles.settingsButtonText}>Open Settings</Text>
+          <ThemedSymbolView size={13} name="arrow.up.forward" themeColor="primary" />
+        </Pressable>
       </View>
     </View>
   );

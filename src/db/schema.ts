@@ -12,20 +12,20 @@ export const conversations = sqliteTable("conversations", {
     .default(sql`(unixepoch())`),
 });
 
-export const transcriptEntries = sqliteTable(
-  "transcript_entries",
+export const messages = sqliteTable(
+  "messages",
   {
     id: text("id").primaryKey(),
     conversationId: text("conversation_id")
       .notNull()
       .references(() => conversations.id, { onDelete: "cascade" }),
     role: text("role", {
-      enum: ["instructions", "prompt", "response", "toolCalls", "toolOutput"],
+      enum: ["system", "user", "assistant"],
     }).notNull(),
     text: text("text").notNull(),
     createdAt: int("created_at")
       .notNull()
       .default(sql`(unixepoch())`),
   },
-  (t) => [index("idx_transcript_conversation").on(t.conversationId)],
+  (t) => [index("idx_messages_conversation").on(t.conversationId)],
 );

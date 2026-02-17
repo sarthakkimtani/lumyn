@@ -1,96 +1,104 @@
+import { useChat } from "@ai-sdk/react";
+import { DirectChatTransport } from "ai";
+import * as Crypto from "expo-crypto";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
-import { StyleSheet } from "react-native-unistyles";
+import { Platform } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
-import { ChatRoot } from "@/components/features/chat/chat-root";
+import { ChatInputBar } from "@/components/features/chat/chat-input-bar";
+import { ChatMessages } from "@/components/features/chat/chat-messages";
+import { EmptyChatArea } from "@/components/features/chat/empty-chat-area";
 
-import { transcriptEntries } from "@/db/schema";
+import { ChatContext } from "@/contexts/chat-context";
 import { useQueries } from "@/hooks/use-queries";
-import { ModelTranscript } from "@/modules/local-llm";
+import { agent, AgentMessage } from "@/lib/agent";
+import { extractTextFromMessage, getChatTitle } from "@/utils/chat";
 
-type TranscriptEntryRow = typeof transcriptEntries.$inferSelect;
-
-const buildTranscript = (entries: TranscriptEntryRow[]): ModelTranscript => ({
-  entries: entries.map((entry) => ({
-    id: entry.id,
-    role: entry.role,
-    text: entry.text,
-    tool: null,
-  })),
-});
+const ThemedKeyboardAvoidingView = withUnistyles(KeyboardAvoidingView);
 
 export const Chat = () => {
+  const [input, setInput] = useState("");
   const { temporary, id } = useLocalSearchParams<{ temporary?: string; id?: string }>();
-  const { fetchConversationById, fetchTranscriptByConversationId } = useQueries();
+  const isTemporary = temporary === "true" && !id;
 
-  const conversationId = typeof id === "string" && id.length > 0 ? id : null;
-  const isTemporary = temporary === "true" && !conversationId;
+  const [chatId, setChatId] = useState(() => id ?? Crypto.randomUUID());
+  const { upsertConversation, upsertMessages, fetchMessagesByConversationId } = useQueries();
 
-  const [chatInstanceKey, setChatInstanceKey] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasTranscript, setHasTranscript] = useState(false);
-  const [initialTranscript, setInitialTranscript] = useState<ModelTranscript | null>(null);
+  const persistChat = async (conversationId: string, msgs: AgentMessage[]) => {
+    if (isTemporary || msgs.length === 0) return;
+    const firstUserMessage = msgs.find((m) => m.role === "user");
+
+    const title = firstUserMessage
+      ? getChatTitle(extractTextFromMessage(firstUserMessage))
+      : "Untitled chat";
+    await upsertConversation({ id: conversationId, title });
+
+    await upsertMessages(
+      msgs.map((m) => ({
+        id: m.id,
+        conversationId,
+        role: m.role,
+        text: extractTextFromMessage(m),
+      })),
+    );
+  };
+
+  const { messages, sendMessage, setMessages, status, error, regenerate, stop } =
+    useChat<AgentMessage>({
+      id: chatId,
+      generateId: () => Crypto.randomUUID(),
+      transport: new DirectChatTransport({ agent }),
+      onFinish: ({ messages: finalMessages }) => persistChat(chatId, finalMessages),
+    });
 
   useEffect(() => {
-    setHasTranscript((initialTranscript?.entries?.length ?? 0) > 0);
-  }, [initialTranscript]);
+    if (!id) return;
+    setChatId(id);
 
-  useEffect(() => {
     let cancelled = false;
-    if (!conversationId) {
-      setLoading(false);
-      setError(null);
-      setInitialTranscript(null);
-      return;
-    }
+    const loadMessages = async () => {
+      const rows = await fetchMessagesByConversationId(id);
+      if (cancelled || rows.length === 0) return;
 
-    const hydrate = async () => {
-      setLoading(true);
-      setError(null);
+      const restored: AgentMessage[] = rows.map((row) => ({
+        id: row.id,
+        role: row.role,
+        parts: [{ type: "text", text: row.text }],
+      }));
 
-      try {
-        const [conversation, entries] = await Promise.all([
-          fetchConversationById(conversationId),
-          fetchTranscriptByConversationId(conversationId),
-        ]);
-        if (cancelled) return;
-
-        if (!conversation) {
-          setInitialTranscript(null);
-          setError("Conversation not found");
-          return;
-        }
-
-        setInitialTranscript(buildTranscript(entries));
-      } catch (e) {
-        if (cancelled) return;
-        setInitialTranscript(null);
-        setError(e instanceof Error ? e.message : "Failed to load conversation");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      setMessages(restored);
     };
 
-    void hydrate();
+    loadMessages();
     return () => {
       cancelled = true;
     };
-  }, [conversationId, fetchConversationById, fetchTranscriptByConversationId]);
+  }, [fetchMessagesByConversationId, setMessages, id]);
+
+  const submit = async () => {
+    const text = input.trim();
+    if (!text) return;
+
+    setInput("");
+    sendMessage({ text });
+  };
 
   const startNewChat = () => {
-    router.setParams({ temporary: "false", id: "" });
-    setChatInstanceKey((prev) => prev + 1);
-    setInitialTranscript(null);
+    setChatId(Crypto.randomUUID());
+    setMessages([]);
+
+    router.setParams({
+      id: "",
+      temporary: "false",
+    });
   };
 
-  const toggleTemp = () => {
-    router.setParams({ temporary: (!isTemporary).toString() });
-  };
+  const toggleTemporaryMode = () => router.setParams({ temporary: (!isTemporary).toString() });
 
   return (
-    <>
+    <ChatContext.Provider value={{ status, messages, regenerate }}>
       <Stack.Toolbar placement="left">
         <Stack.Toolbar.Button
           icon="bubble.left.and.text.bubble.right"
@@ -101,35 +109,36 @@ export const Chat = () => {
 
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
-          hidden={!hasTranscript}
+          hidden={messages.length === 0}
           icon="square.and.pencil"
           onPress={startNewChat}
         />
         <Stack.Toolbar.Button
-          hidden={hasTranscript}
+          hidden={messages.length > 0}
           icon={isTemporary ? "shield.fill" : "shield"}
-          onPress={toggleTemp}
+          onPress={toggleTemporaryMode}
         />
       </Stack.Toolbar>
 
-      {loading ? (
-        <View style={[styles.container, styles.center]}>
-          <ActivityIndicator size="large" />
-        </View>
-      ) : error ? (
-        <View style={[styles.container, styles.center]}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      ) : (
-        <ChatRoot
-          key={conversationId ?? `new-${chatInstanceKey}`}
-          temporary={isTemporary}
-          conversationId={conversationId}
-          initialTranscript={initialTranscript}
-          onTranscriptChange={(t) => setHasTranscript((t.entries?.length ?? 0) > 0)}
+      <ThemedKeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={100}
+      >
+        {messages.length > 0 ? (
+          <ChatMessages messages={messages} error={error} />
+        ) : (
+          <EmptyChatArea temporary={isTemporary} onSuggestionPress={setInput} />
+        )}
+        <ChatInputBar
+          value={input}
+          status={status}
+          onChangeText={setInput}
+          onSend={submit}
+          onStop={stop}
         />
-      )}
-    </>
+      </ThemedKeyboardAvoidingView>
+    </ChatContext.Provider>
   );
 };
 
@@ -137,15 +146,5 @@ const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  center: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 24,
-  },
-  errorText: {
-    color: theme.colors.error,
-    textAlign: "center",
-    fontSize: 14,
   },
 }));

@@ -1,12 +1,15 @@
 import * as Clipboard from "expo-clipboard";
 import { GlassView } from "expo-glass-effect";
 import { SFSymbol } from "expo-symbols";
+import { useEffect, useState } from "react";
 import { Pressable, Share } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
-import { TranscriptEntry } from "@/modules/local-llm";
-import { useEffect, useState } from "react";
+
+import { AgentMessage } from "@/lib/agent";
+import { extractTextFromMessage } from "@/utils/chat";
+import { useChatContext } from "@/contexts/chat-context";
 
 const IconButton = ({ name, onPress }: { name: SFSymbol; onPress: () => void }) => {
   return (
@@ -16,8 +19,10 @@ const IconButton = ({ name, onPress }: { name: SFSymbol; onPress: () => void }) 
   );
 };
 
-export const ResponseFooter = ({ entry }: { entry: TranscriptEntry }) => {
+export const AssistantFooter = ({ message }: { message: AgentMessage }) => {
+  const {regenerate} = useChatContext();
   const [copied, setCopied] = useState(false);
+  const text = extractTextFromMessage(message)
 
   useEffect(() => {
     if (copied) {
@@ -32,7 +37,7 @@ export const ResponseFooter = ({ entry }: { entry: TranscriptEntry }) => {
   const handleClipboardCopy = () => {
     if (copied) return;
     setCopied(true);
-    Clipboard.setStringAsync(entry.text);
+    Clipboard.setStringAsync(text);
   };
 
   return (
@@ -41,7 +46,8 @@ export const ResponseFooter = ({ entry }: { entry: TranscriptEntry }) => {
         name={copied ? "checkmark" : "document.on.document"}
         onPress={handleClipboardCopy}
       />
-      <IconButton name="square.and.arrow.up" onPress={() => Share.share({ message: entry.text })} />
+      <IconButton name="square.and.arrow.up" onPress={() => Share.share({ message: text })} />
+      <IconButton name="arrow.counterclockwise" onPress={regenerate} />
     </GlassView>
   );
 };
