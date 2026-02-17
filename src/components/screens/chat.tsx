@@ -59,7 +59,7 @@ export const Chat = () => {
 
     let cancelled = false;
     const loadMessages = async () => {
-      const rows = await fetchMessagesByConversationId(chatId);
+      const rows = await fetchMessagesByConversationId(id);
       if (cancelled || rows.length === 0) return;
 
       const restored: AgentMessage[] = rows.map((row) => ({
@@ -75,7 +75,7 @@ export const Chat = () => {
     return () => {
       cancelled = true;
     };
-  }, [fetchMessagesByConversationId, setMessages, chatId, id]);
+  }, [fetchMessagesByConversationId, setMessages, id]);
 
   const submit = async () => {
     const text = input.trim();
@@ -86,8 +86,8 @@ export const Chat = () => {
   };
 
   const startNewChat = () => {
-    const newId = Crypto.randomUUID();
-    setChatId(newId);
+    setChatId(Crypto.randomUUID());
+    setMessages([]);
 
     router.setParams({
       id: "",

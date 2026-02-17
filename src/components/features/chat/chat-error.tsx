@@ -17,9 +17,8 @@ export const ChatError = ({ error }: { error: Error }) => {
 
 const styles = StyleSheet.create((theme) => ({
   errorContainer: {
-    margin: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    margin: 12,
+    padding: 10,
     borderRadius: 14,
     flexDirection: "row",
     alignItems: "center",
@@ -29,6 +28,7 @@ const styles = StyleSheet.create((theme) => ({
     borderColor: "#ff5a5a59",
   },
   errorText: {
+    flexShrink: 1,
     color: theme.colors.error,
   },
 }));

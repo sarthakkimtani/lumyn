@@ -49,7 +49,7 @@ export const Conversations = () => {
   const handleRowDeletion = async (id: string) => {
     try {
       await deleteConversationById(id);
-      setRows(rows.filter((row) => row.id !== id));
+      setRows((prev) => prev.filter((row) => row.id !== id));
     } catch (e) {
       const message = e instanceof Error ? e.message : "Could not delete conversation";
       Alert.alert("Error", message);
