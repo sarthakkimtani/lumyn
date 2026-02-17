@@ -15,9 +15,16 @@ type ChatInputBarProps = {
   status: ChatStatus;
   onChangeText: (text: string) => void;
   onSend: () => void;
+  onStop: () => void;
 };
 
-export const ChatInputBar = ({ value, status, onChangeText, onSend }: ChatInputBarProps) => {
+export const ChatInputBar = ({
+  value,
+  status,
+  onChangeText,
+  onSend,
+  onStop,
+}: ChatInputBarProps) => {
   const insets = useSafeAreaInsets();
   const isDisabled = status !== "ready";
 
@@ -34,7 +41,10 @@ export const ChatInputBar = ({ value, status, onChangeText, onSend }: ChatInputB
           editable={!isDisabled}
         />
       </GlassView>
-      <SendButton loading={status === "streaming"} disabled={isDisabled} onSend={onSend} />
+      <SendButton
+        loading={status === "streaming"}
+        onPress={status === "streaming" ? onStop : onSend}
+      />
     </GlassContainer>
   );
 };

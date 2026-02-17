@@ -8,6 +8,8 @@ import { StyleSheet } from "react-native-unistyles";
 import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
 
 import { AgentMessage } from "@/lib/agent";
+import { extractTextFromMessage } from "@/utils/chat";
+import { useChatContext } from "@/contexts/chat-context";
 
 const IconButton = ({ name, onPress }: { name: SFSymbol; onPress: () => void }) => {
   return (
@@ -18,11 +20,9 @@ const IconButton = ({ name, onPress }: { name: SFSymbol; onPress: () => void }) 
 };
 
 export const AssistantFooter = ({ message }: { message: AgentMessage }) => {
+  const {regenerate} = useChatContext();
   const [copied, setCopied] = useState(false);
-  const text = message.parts
-    .filter((p) => p.type === "text")
-    .map((p) => p.text ?? "")
-    .join("");
+  const text = extractTextFromMessage(message)
 
   useEffect(() => {
     if (copied) {
@@ -47,6 +47,7 @@ export const AssistantFooter = ({ message }: { message: AgentMessage }) => {
         onPress={handleClipboardCopy}
       />
       <IconButton name="square.and.arrow.up" onPress={() => Share.share({ message: text })} />
+      <IconButton name="arrow.counterclockwise" onPress={regenerate} />
     </GlassView>
   );
 };

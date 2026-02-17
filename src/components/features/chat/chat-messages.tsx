@@ -2,13 +2,14 @@ import { FlashList } from "@shopify/flash-list";
 import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
+import { ChatError } from "@/components/features/chat/chat-error";
 import { ChatMessage } from "@/components/features/chat/chat-message";
 import { ScrollDownButton } from "@/components/features/chat/scroll-down-button";
 
 import { useChatList } from "@/hooks/use-chat-list";
 import { AgentMessage } from "@/lib/agent";
 
-export const ChatMessages = ({ messages }: { messages: AgentMessage[] }) => {
+export const ChatMessages = ({ messages, error }: { messages: AgentMessage[]; error?: Error }) => {
   const { listRef, showScrollDownButton, scrollToEnd, onLayout, onContentSizeChange, onScroll } =
     useChatList({ messages });
 
@@ -28,6 +29,7 @@ export const ChatMessages = ({ messages }: { messages: AgentMessage[] }) => {
           <ChatMessage message={item} isLast={index === messages.length - 1} />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListFooterComponent={error ? <ChatError error={error} /> : null}
       />
       <ScrollDownButton visible={showScrollDownButton} onPress={scrollToEnd} />
     </View>
