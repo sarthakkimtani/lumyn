@@ -7,9 +7,10 @@ import { StyleSheet } from "react-native-unistyles";
 
 import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
 
+import { useChatContext } from "@/contexts/chat-context";
+import { useQueries } from "@/hooks/use-queries";
 import { AgentMessage } from "@/lib/agent";
 import { extractTextFromMessage } from "@/utils/chat";
-import { useChatContext } from "@/contexts/chat-context";
 
 const IconButton = ({ name, onPress }: { name: SFSymbol; onPress: () => void }) => {
   return (
@@ -20,9 +21,10 @@ const IconButton = ({ name, onPress }: { name: SFSymbol; onPress: () => void }) 
 };
 
 export const AssistantFooter = ({ message }: { message: AgentMessage }) => {
-  const {regenerate} = useChatContext();
+  const { regenerate } = useChatContext();
+  const { deleteMessageById } = useQueries();
   const [copied, setCopied] = useState(false);
-  const text = extractTextFromMessage(message)
+  const text = extractTextFromMessage(message);
 
   useEffect(() => {
     if (copied) {
@@ -40,6 +42,11 @@ export const AssistantFooter = ({ message }: { message: AgentMessage }) => {
     Clipboard.setStringAsync(text);
   };
 
+  const regenerateMessage = async () => {
+    await deleteMessageById(message.id);
+    await regenerate({ messageId: message.id });
+  };
+
   return (
     <GlassView style={styles.container}>
       <IconButton
@@ -47,7 +54,7 @@ export const AssistantFooter = ({ message }: { message: AgentMessage }) => {
         onPress={handleClipboardCopy}
       />
       <IconButton name="square.and.arrow.up" onPress={() => Share.share({ message: text })} />
-      <IconButton name="arrow.counterclockwise" onPress={regenerate} />
+      <IconButton name="arrow.counterclockwise" onPress={regenerateMessage} />
     </GlassView>
   );
 };

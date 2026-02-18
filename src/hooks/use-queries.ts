@@ -15,6 +15,10 @@ export const useQueries = () => {
     return await db.delete(conversations).where(eq(conversations.id, id));
   };
 
+  const deleteMessageById = async (id: string) => {
+    return await db.delete(messages).where(eq(messages.id, id));
+  };
+
   const fetchConversations = async () => {
     return await db.select().from(conversations).orderBy(desc(conversations.createdAt));
   };
@@ -56,6 +60,7 @@ export const useQueries = () => {
 
   return {
     deleteConversationById,
+    deleteMessageById,
     fetchConversations,
     fetchConversationById,
     fetchMessagesByConversationId,
