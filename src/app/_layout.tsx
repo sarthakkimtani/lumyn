@@ -7,7 +7,9 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { AppLayout } from "@/components/layouts/app-layout";
 import migrations from "@/drizzle/migrations";
+import { applyThemePreference, getThemeFromStorage } from "@/lib/theme";
 
+applyThemePreference(getThemeFromStorage());
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
   fade: true,

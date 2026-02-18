@@ -104,7 +104,7 @@ export const Chat = () => {
           icon="bubble.left.and.text.bubble.right"
           onPress={() => router.push("/conversations")}
         />
-        <Stack.Toolbar.Button icon="gear" onPress={() => {}} />
+        <Stack.Toolbar.Button icon="gear" onPress={() => router.push("/settings")} />
       </Stack.Toolbar>
 
       <Stack.Toolbar placement="right">

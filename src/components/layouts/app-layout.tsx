@@ -30,7 +30,17 @@ export const AppLayout = () => {
     >
       <Stack.Screen
         name="conversations"
-        options={{ title: "Conversations", headerBackButtonDisplayMode: "minimal" }}
+        options={{
+          title: "Conversations",
+          headerBackButtonDisplayMode: "minimal",
+        }}
+      />
+      <Stack.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          headerBackButtonDisplayMode: "minimal",
+        }}
       />
     </Stack>
   );
