@@ -9,11 +9,12 @@ import { AppLayout } from "@/components/layouts/app-layout";
 import migrations from "@/drizzle/migrations";
 import { applyThemePreference, getThemeFromStorage } from "@/lib/theme";
 
-applyThemePreference(getThemeFromStorage());
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
   fade: true,
 });
+
+applyThemePreference(getThemeFromStorage());
 
 const DB_NAME = "lumyn.db";
 const expo = SQLite.openDatabaseSync(DB_NAME);

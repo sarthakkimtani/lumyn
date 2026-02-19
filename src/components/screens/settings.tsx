@@ -14,7 +14,11 @@ const SettingsIcon = ({ name, size }: { name: SFSymbol; size?: number }) => (
 
 export const Settings = () => {
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.scrollView}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={styles.content}
+    >
       <SettingsSection title="APPEARANCE">
         <SettingsRow
           label="Theme"

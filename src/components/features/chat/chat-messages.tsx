@@ -20,6 +20,7 @@ export const ChatMessages = ({ messages, error }: { messages: AgentMessage[]; er
         data={messages}
         style={styles.container}
         contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
         keyExtractor={(item) => item.id}
         onLayout={(e) => onLayout(e.nativeEvent.layout.height)}
         onContentSizeChange={onContentSizeChange}

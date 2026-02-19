@@ -51,6 +51,7 @@ export const ConversationsList = ({
       sections={sections}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.contentContainer}
+      contentInsetAdjustmentBehavior="automatic"
       showsVerticalScrollIndicator={false}
       stickySectionHeadersEnabled={false}
       renderSectionHeader={({ section }) => (

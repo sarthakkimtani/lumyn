@@ -24,7 +24,7 @@ export const AppLayout = () => {
       screenOptions={() => ({
         title: "Lumyn",
         headerShadowVisible: false,
-        headerStyle: { backgroundColor: theme.colors.background },
+        headerTransparent: true,
         headerTitleStyle: { color: theme.colors.text },
       })}
     >
@@ -32,6 +32,7 @@ export const AppLayout = () => {
         name="conversations"
         options={{
           title: "Conversations",
+          headerLargeTitleEnabled: true,
           headerBackButtonDisplayMode: "minimal",
         }}
       />
@@ -39,6 +40,7 @@ export const AppLayout = () => {
         name="settings"
         options={{
           title: "Settings",
+          headerLargeTitleEnabled: true,
           headerBackButtonDisplayMode: "minimal",
         }}
       />
