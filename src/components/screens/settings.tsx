@@ -1,66 +1,41 @@
 import * as Application from "expo-application";
 import { SFSymbol } from "expo-symbols";
-import { useState } from "react";
 import { ScrollView, Text } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { SettingsRow } from "@/components/features/settings/settings-row";
 import { SettingsSection } from "@/components/features/settings/settings-section";
+import { ThemePicker } from "@/components/features/settings/theme-picker";
 import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
-import { getThemeFromStorage, setThemeToStorage, type ThemePreference } from "@/lib/theme";
 
-const THEME_OPTIONS: { value: ThemePreference; label: string; icon: SFSymbol }[] = [
-  { value: "system", label: "System", icon: "circle.lefthalf.filled" },
-  { value: "light", label: "Light", icon: "sun.max.fill" },
-  { value: "dark", label: "Dark", icon: "moon.fill" },
-];
+const SettingsIcon = ({ name, size }: { name: SFSymbol; size?: number }) => (
+  <ThemedSymbolView name={name} themeColor="textSecondary" size={size || 20} />
+);
 
 export const Settings = () => {
-  const [theme, setTheme] = useState<ThemePreference>(getThemeFromStorage);
-
-  const handleThemeChange = (preference: ThemePreference) => {
-    setTheme(preference);
-    setThemeToStorage(preference);
-  };
-
   return (
-    <ScrollView
-      style={styles.scrollView}
-      contentContainerStyle={styles.content}
-      contentInsetAdjustmentBehavior="automatic"
-    >
-      <SettingsSection
-        title="APPEARANCE"
-        footer="Choose System to automatically match your device appearance."
-      >
-        {THEME_OPTIONS.map((option, index) => (
-          <SettingsRow
-            key={option.value}
-            label={option.label}
-            icon={<ThemedSymbolView name={option.icon} themeColor="textSecondary" size={20} />}
-            trailing={
-              theme === option.value ? (
-                <ThemedSymbolView
-                  name="checkmark"
-                  themeColor="primary"
-                  size={18}
-                  weight="semibold"
-                />
-              ) : undefined
-            }
-            isFirst={index === 0}
-            isLast={index === THEME_OPTIONS.length - 1}
-            onPress={() => handleThemeChange(option.value)}
-          />
-        ))}
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <SettingsSection title="APPEARANCE">
+        <SettingsRow
+          label="Theme"
+          icon={<SettingsIcon name="circle.lefthalf.filled" />}
+          trailing={<ThemePicker />}
+          isFirst
+          isLast
+        />
       </SettingsSection>
 
       <SettingsSection title="ABOUT">
         <SettingsRow
-          label="Version"
-          icon={<ThemedSymbolView name="info.circle.fill" themeColor="textSecondary" size={20} />}
-          trailing={<Text style={styles.valueText}>{Application.nativeApplicationVersion}</Text>}
+          label="Legal"
+          icon={<SettingsIcon name="scroll.fill" />}
+          trailing={<SettingsIcon name="chevron.right" size={16} />}
           isFirst
+        />
+        <SettingsRow
+          label="Version"
+          icon={<SettingsIcon name="info.circle.fill" />}
+          trailing={<Text style={styles.valueText}>{Application.nativeApplicationVersion}</Text>}
           isLast
         />
       </SettingsSection>
@@ -81,5 +56,6 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.textSecondary,
     fontSize: 17,
     lineHeight: 22,
+    marginRight: 4,
   },
 }));
