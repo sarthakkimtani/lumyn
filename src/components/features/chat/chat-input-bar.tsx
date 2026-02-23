@@ -1,6 +1,7 @@
 import { ChatStatus } from "ai";
 import { GlassContainer, GlassView } from "expo-glass-effect";
-import { TextInput } from "react-native";
+import { useEffect, useState } from "react";
+import { Keyboard, Platform, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
@@ -25,11 +26,27 @@ export const ChatInputBar = ({
   onSend,
   onStop,
 }: ChatInputBarProps) => {
-  const insets = useSafeAreaInsets();
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const isDisabled = status !== "ready";
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSubscription = Keyboard.addListener(showEvent, () => setIsKeyboardVisible(true));
+    const hideSubscription = Keyboard.addListener(hideEvent, () => setIsKeyboardVisible(false));
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   return (
-    <GlassContainer style={[styles.inputContainer, { marginBottom: insets.bottom }]}>
+    <GlassContainer
+      style={[styles.inputContainer, { marginBottom: isKeyboardVisible ? 20 : insets.bottom }]}
+    >
       <GlassView style={styles.glassContainer} isInteractive>
         <ThemedTextInput
           style={styles.textInput}

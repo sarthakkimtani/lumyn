@@ -123,7 +123,6 @@ export const Chat = () => {
       <ThemedKeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={100}
       >
         {messages.length > 0 ? (
           <ChatMessages messages={messages} error={error} />

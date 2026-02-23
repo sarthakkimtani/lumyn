@@ -1,17 +1,37 @@
-import { FlashList } from "@shopify/flash-list";
-import { View } from "react-native";
+import { FlashList, FlashListRef } from "@shopify/flash-list";
+import { useCallback, useRef, useState } from "react";
+import { NativeScrollEvent, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { ChatError } from "@/components/features/chat/chat-error";
 import { ChatMessage } from "@/components/features/chat/chat-message";
 import { ScrollDownButton } from "@/components/features/chat/scroll-down-button";
 
-import { useChatList } from "@/hooks/use-chat-list";
 import { AgentMessage } from "@/lib/agent";
 
 export const ChatMessages = ({ messages, error }: { messages: AgentMessage[]; error?: Error }) => {
-  const { listRef, showScrollDownButton, scrollToEnd, onLayout, onContentSizeChange, onScroll } =
-    useChatList({ messages });
+  const [viewportHeight, setViewportHeight] = useState(0);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const listRef = useRef<FlashListRef<AgentMessage>>(null);
+
+  const scrollToEnd = useCallback(() => {
+    listRef.current?.scrollToEnd({ animated: true });
+    setIsAtBottom(true);
+  }, []);
+
+  const isCloseToBottom = ({
+    layoutMeasurement,
+    contentOffset,
+    contentSize,
+  }: NativeScrollEvent) => {
+    const paddingToBottom = 20;
+    return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+  };
+
+  const onScroll = (nativeEvent: NativeScrollEvent) => setIsAtBottom(isCloseToBottom(nativeEvent));
+  const onContentSizeChange = (_: number, height: number) => setContentHeight(height);
+  const onLayout = (height: number) => setViewportHeight(height);
 
   return (
     <View style={{ flex: 1 }}>
@@ -32,7 +52,10 @@ export const ChatMessages = ({ messages, error }: { messages: AgentMessage[]; er
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListFooterComponent={error ? <ChatError error={error} /> : null}
       />
-      <ScrollDownButton visible={showScrollDownButton} onPress={scrollToEnd} />
+      <ScrollDownButton
+        visible={contentHeight > viewportHeight && !isAtBottom}
+        onPress={scrollToEnd}
+      />
     </View>
   );
 };
