@@ -6,6 +6,7 @@ import { SQLiteProvider } from "expo-sqlite";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { AppLayout } from "@/components/layouts/app-layout";
+import { ModelProvider } from "@/contexts/model-context";
 import migrations from "@/drizzle/migrations";
 import { applyThemePreference, getThemeFromStorage } from "@/lib/theme";
 
@@ -27,7 +28,9 @@ export default function RootLayout() {
   return (
     <SQLiteProvider databaseName={DB_NAME} options={{ enableChangeListener: true }}>
       <KeyboardProvider>
-        <AppLayout />
+        <ModelProvider>
+          <AppLayout />
+        </ModelProvider>
       </KeyboardProvider>
     </SQLiteProvider>
   );
