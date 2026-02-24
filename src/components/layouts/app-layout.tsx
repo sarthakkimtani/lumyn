@@ -14,9 +14,9 @@ export const AppLayout = () => {
   useEffect(() => {
     const init = async () => {
       const downloaded = await isModelDownloaded(MODEL_ID);
+      setReady(downloaded);
       if (downloaded) {
         await prepareAgent();
-        setReady(true);
       }
       SplashScreen.hideAsync();
     };
