@@ -30,8 +30,8 @@ export const SendButton = ({ onPress }: { onPress: () => void }) => {
   }, [status, spin]);
 
   return (
-    <ThemedGlassView themeColor="primary" isInteractive style={styles.sendButton}>
-      <Pressable accessibilityRole="button" onPress={onPress}>
+    <Pressable accessibilityRole="button" disabled={status !== "ready"} onPress={onPress}>
+      <ThemedGlassView themeColor="primary" isInteractive style={styles.sendButton}>
         <Animated.View style={iconStyle}>
           <SymbolView
             name={
@@ -46,8 +46,8 @@ export const SendButton = ({ onPress }: { onPress: () => void }) => {
             tintColor="#FFF"
           />
         </Animated.View>
-      </Pressable>
-    </ThemedGlassView>
+      </ThemedGlassView>
+    </Pressable>
   );
 };
 

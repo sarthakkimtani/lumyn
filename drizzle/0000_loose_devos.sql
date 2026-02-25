@@ -10,6 +10,7 @@ CREATE TABLE `messages` (
 	`conversation_id` text NOT NULL,
 	`role` text NOT NULL,
 	`text` text NOT NULL,
+	`reasoning_text` text,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	FOREIGN KEY (`conversation_id`) REFERENCES `conversations`(`id`) ON UPDATE no action ON DELETE cascade
 );

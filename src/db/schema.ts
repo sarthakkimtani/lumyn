@@ -23,6 +23,7 @@ export const messages = sqliteTable(
       enum: ["system", "user", "assistant"],
     }).notNull(),
     text: text("text").notNull(),
+    reasoningText: text("reasoning_text"),
     createdAt: int("created_at")
       .notNull()
       .default(sql`(unixepoch())`),
