@@ -1,13 +1,13 @@
 import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
+import { AssistantContent } from "@/components/features/chat/assistant-content";
 import { AssistantFooter } from "@/components/features/chat/assistant-footer";
-import { MarkdownRenderer } from "@/components/features/markdown/markdown-renderer";
 import { TypingDot } from "@/components/util/typing-dot";
 
 import { useChatContext } from "@/contexts/chat-context";
 import { AgentMessage } from "@/lib/agent";
-import { extractTextFromMessage } from "@/utils/chat";
+import { extractReasoningFromMessage, extractTextFromMessage } from "@/utils/chat";
 
 export const AssistantMessage = ({
   message,
@@ -17,9 +17,10 @@ export const AssistantMessage = ({
   isLast?: boolean;
 }) => {
   const textContent = extractTextFromMessage(message);
+  const reasoningContent = extractReasoningFromMessage(message);
   const { status } = useChatContext();
 
-  if (textContent.length === 0 && status === "streaming") {
+  if (textContent.length === 0 && reasoningContent.length === 0 && status === "streaming") {
     return (
       <View style={styles.placeholder}>
         <View style={styles.dots}>
@@ -33,7 +34,7 @@ export const AssistantMessage = ({
 
   return (
     <View style={styles.assistantContainer}>
-      <MarkdownRenderer markdown={textContent} />
+      <AssistantContent message={message} />
       {isLast && (status === "ready" || status === "error") && (
         <AssistantFooter message={message} />
       )}
@@ -41,17 +42,12 @@ export const AssistantMessage = ({
   );
 };
 
-export const styles = StyleSheet.create((theme) => ({
+export const styles = StyleSheet.create({
   assistantContainer: {
     gap: 20,
     paddingHorizontal: 10,
     paddingVertical: 2,
     marginVertical: 15,
-  },
-  assistantText: {
-    color: theme.colors.text,
-    fontSize: 16,
-    lineHeight: 24,
   },
   placeholder: {
     width: "100%",
@@ -64,4 +60,4 @@ export const styles = StyleSheet.create((theme) => ({
     gap: 6,
     marginLeft: 2,
   },
-}));
+});

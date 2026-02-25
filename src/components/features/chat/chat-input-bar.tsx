@@ -58,10 +58,7 @@ export const ChatInputBar = ({
           editable={!isDisabled}
         />
       </GlassView>
-      <SendButton
-        loading={status === "streaming"}
-        onPress={status === "streaming" ? onStop : onSend}
-      />
+      <SendButton onPress={status === "streaming" ? onStop : onSend} />
     </GlassContainer>
   );
 };

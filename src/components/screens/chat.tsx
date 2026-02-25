@@ -13,7 +13,7 @@ import { EmptyChatArea } from "@/components/features/chat/empty-chat-area";
 
 import { ChatContext } from "@/contexts/chat-context";
 import { useQueries } from "@/hooks/use-queries";
-import { AgentMessage, getAgent } from "@/lib/agent";
+import { agent, AgentMessage } from "@/lib/agent";
 import { extractTextFromMessage, getChatTitle } from "@/utils/chat";
 
 const ThemedKeyboardAvoidingView = withUnistyles(KeyboardAvoidingView);
@@ -49,7 +49,7 @@ export const Chat = () => {
     useChat<AgentMessage>({
       id: chatId,
       generateId: () => Crypto.randomUUID(),
-      transport: new DirectChatTransport({ agent: getAgent() }),
+      transport: new DirectChatTransport({ agent: agent }),
       onFinish: ({ messages: finalMessages }) => persistChat(chatId, finalMessages),
     });
 
