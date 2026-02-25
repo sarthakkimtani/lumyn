@@ -12,9 +12,9 @@ import { ChatMessages } from "@/components/features/chat/chat-messages";
 import { EmptyChatArea } from "@/components/features/chat/empty-chat-area";
 
 import { ChatContext } from "@/contexts/chat-context";
-import { useQueries } from "@/hooks/use-queries";
+import { usePersistChat } from "@/hooks/use-persist-chat";
+import { useRestoredMessages } from "@/hooks/use-restored-messages";
 import { agent, AgentMessage } from "@/lib/agent";
-import { extractTextFromMessage, getChatTitle } from "@/utils/chat";
 
 const ThemedKeyboardAvoidingView = withUnistyles(KeyboardAvoidingView);
 
@@ -24,58 +24,26 @@ export const Chat = () => {
   const isTemporary = temporary === "true" && !id;
 
   const [chatId, setChatId] = useState(() => id ?? Crypto.randomUUID());
-  const { upsertConversation, upsertMessages, fetchMessagesByConversationId } = useQueries();
-
-  const persistChat = async (conversationId: string, msgs: AgentMessage[]) => {
-    if (isTemporary || msgs.length === 0) return;
-    const firstUserMessage = msgs.find((m) => m.role === "user");
-
-    const title = firstUserMessage
-      ? getChatTitle(extractTextFromMessage(firstUserMessage))
-      : "Untitled chat";
-    await upsertConversation({ id: conversationId, title });
-
-    await upsertMessages(
-      msgs.map((m) => ({
-        id: m.id,
-        conversationId,
-        role: m.role,
-        text: extractTextFromMessage(m),
-      })),
-    );
-  };
+  const persistChat = usePersistChat({ persist: !isTemporary });
 
   const { messages, sendMessage, setMessages, status, error, regenerate, stop } =
     useChat<AgentMessage>({
       id: chatId,
       generateId: () => Crypto.randomUUID(),
-      transport: new DirectChatTransport({ agent }),
+      transport: new DirectChatTransport({ agent: agent }),
       onFinish: ({ messages: finalMessages }) => persistChat(chatId, finalMessages),
     });
+
+  const restoredMessages = useRestoredMessages(id);
 
   useEffect(() => {
     if (!id) return;
     setChatId(id);
 
-    let cancelled = false;
-    const loadMessages = async () => {
-      const rows = await fetchMessagesByConversationId(id);
-      if (cancelled || rows.length === 0) return;
-
-      const restored: AgentMessage[] = rows.map((row) => ({
-        id: row.id,
-        role: row.role,
-        parts: [{ type: "text", text: row.text }],
-      }));
-
-      setMessages(restored);
-    };
-
-    loadMessages();
-    return () => {
-      cancelled = true;
-    };
-  }, [fetchMessagesByConversationId, setMessages, id]);
+    if (restoredMessages) {
+      setMessages(restoredMessages);
+    }
+  }, [id, restoredMessages, setMessages]);
 
   const submit = async () => {
     const text = input.trim();

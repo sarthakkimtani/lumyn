@@ -1,49 +1,66 @@
-import { apple } from "@react-native-ai/apple";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
 import { useUnistyles } from "react-native-unistyles";
 
-import { Unavailable } from "@/components/screens/unavailable";
+import { useModelContext } from "@/contexts/model-context";
+import { MODEL_ID, prepareAgent } from "@/lib/agent";
+import { isModelDownloaded } from "@react-native-ai/llama";
+import { useEffect } from "react";
 
 export const AppLayout = () => {
   const { theme } = useUnistyles();
-  const [availability, setAvailability] = useState<boolean | null>(null);
+  const { ready, setReady } = useModelContext();
 
-  // TODO: Figure out if useEffect should be used here or not
   useEffect(() => {
-    setAvailability(apple.isAvailable());
-    SplashScreen.hideAsync();
-  }, []);
+    const init = async () => {
+      const downloaded = await isModelDownloaded(MODEL_ID);
+      setReady(downloaded);
+      if (downloaded) {
+        await prepareAgent();
+      }
+      SplashScreen.hideAsync();
+    };
 
-  if (availability == null) return null;
-  if (!availability) return <Unavailable />;
+    init();
+  }, [setReady]);
+
+  if (ready === null) return null;
 
   return (
     <Stack
       screenOptions={() => ({
-        title: "Lumyn",
         headerShadowVisible: false,
         headerTransparent: true,
         headerTitleStyle: { color: theme.colors.text },
       })}
     >
-      <Stack.Screen
-        name="conversations"
-        options={{
-          title: "Conversations",
-          headerLargeTitleEnabled: true,
-          headerBackButtonDisplayMode: "minimal",
-        }}
-      />
-      <Stack.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          headerLargeTitleEnabled: true,
-          headerBackButtonDisplayMode: "minimal",
-        }}
-      />
+      <Stack.Protected guard={!ready}>
+        <Stack.Screen name="(download)" options={{ headerShown: false }} />
+      </Stack.Protected>
+      <Stack.Protected guard={ready}>
+        <Stack.Screen
+          name="index"
+          options={{
+            title: "Lumyn",
+          }}
+        />
+        <Stack.Screen
+          name="conversations"
+          options={{
+            title: "Conversations",
+            headerLargeTitleEnabled: true,
+            headerBackButtonDisplayMode: "minimal",
+          }}
+        />
+        <Stack.Screen
+          name="settings"
+          options={{
+            title: "Settings",
+            headerLargeTitleEnabled: true,
+            headerBackButtonDisplayMode: "minimal",
+          }}
+        />
+      </Stack.Protected>
     </Stack>
   );
 };

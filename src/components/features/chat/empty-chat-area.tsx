@@ -56,15 +56,12 @@ export const EmptyChatArea = ({
       <View style={styles.suggestionsRow}>
         {SUGGESTIONS.map((suggestion) => (
           <View key={suggestion.label}>
-            <GlassView style={styles.suggestionChip} isInteractive>
-              <Pressable
-                style={styles.suggestionChipPressable}
-                onPress={() => onSuggestionPress?.(suggestion.prompt)}
-              >
+            <Pressable onPress={() => onSuggestionPress?.(suggestion.prompt)}>
+              <GlassView style={styles.suggestionChip} isInteractive>
                 <ThemedSymbolView themeColor="primary" name={suggestion.icon} size={20} />
                 <Text style={styles.suggestionText}>{suggestion.label}</Text>
-              </Pressable>
-            </GlassView>
+              </GlassView>
+            </Pressable>
           </View>
         ))}
       </View>
@@ -107,14 +104,12 @@ const styles = StyleSheet.create((theme) => ({
     gap: 10,
   },
   suggestionChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  suggestionChipPressable: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
     gap: 8,
   },
   suggestionText: {
