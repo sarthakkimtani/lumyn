@@ -75,10 +75,9 @@ export const Conversations = () => {
         ) : rows.length === 0 ? (
           <View style={styles.stateContainer}>
             <ThemedSymbolView
-              name="bubble.left.and.text.bubble.right"
+              icon={{ ios: "bubble.left.and.text.bubble.right", android: "chat" }}
               themeColor="textSecondary"
               size={64}
-              style={styles.emptyIcon}
             />
             <Text style={styles.emptyTitle}>No conversations yet</Text>
             <Text style={styles.emptySubtitle}>Start a chat to see it here.</Text>
@@ -107,9 +106,6 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: "center",
     paddingHorizontal: 24,
     gap: 6,
-  },
-  emptyIcon: {
-    marginBottom: 10,
   },
   emptyTitle: {
     color: theme.colors.text,

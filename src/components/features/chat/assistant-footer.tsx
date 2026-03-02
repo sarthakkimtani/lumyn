@@ -5,17 +5,23 @@ import { useEffect, useState } from "react";
 import { Pressable, Share } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
+import { MaterialSymbol, ThemedSymbolView } from "@/components/util/themed-symbol-view";
 
 import { useChatContext } from "@/contexts/chat-context";
 import { useQueries } from "@/hooks/use-queries";
 import { AgentMessage } from "@/lib/agent";
 import { extractTextFromMessage } from "@/utils/chat";
 
-const IconButton = ({ name, onPress }: { name: SFSymbol; onPress: () => void }) => {
+const IconButton = ({
+  icon,
+  onPress,
+}: {
+  icon: { ios: SFSymbol; android: MaterialSymbol };
+  onPress: () => void;
+}) => {
   return (
     <Pressable style={({ pressed }) => [pressed && styles.buttonPressed]} onPress={onPress}>
-      <ThemedSymbolView size={21} weight="medium" name={name} themeColor="textSecondary" />
+      <ThemedSymbolView size={21} weight="medium" icon={icon} themeColor="textSecondary" />
     </Pressable>
   );
 };
@@ -50,11 +56,20 @@ export const AssistantFooter = ({ message }: { message: AgentMessage }) => {
   return (
     <GlassView style={styles.container}>
       <IconButton
-        name={copied ? "checkmark" : "document.on.document"}
+        icon={{
+          ios: copied ? "checkmark" : "document.on.document",
+          android: copied ? "done" : "content-copy",
+        }}
         onPress={handleClipboardCopy}
       />
-      <IconButton name="square.and.arrow.up" onPress={() => Share.share({ message: text })} />
-      <IconButton name="arrow.counterclockwise" onPress={regenerateMessage} />
+      <IconButton
+        icon={{ ios: "square.and.arrow.up", android: "share" }}
+        onPress={() => Share.share({ message: text })}
+      />
+      <IconButton
+        icon={{ ios: "arrow.counterclockwise", android: "replay" }}
+        onPress={regenerateMessage}
+      />
     </GlassView>
   );
 };

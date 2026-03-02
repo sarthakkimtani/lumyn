@@ -14,7 +14,12 @@ export const DownloadComplete = ({
   return (
     <Animated.View entering={FadeInDown.duration(400)} style={styles.section}>
       <View style={styles.iconCircleSuccess}>
-        <ThemedSymbolView size={30} weight="medium" name="checkmark.circle" themeColor="primary" />
+        <ThemedSymbolView
+          size={30}
+          weight="medium"
+          icon={{ ios: "checkmark.circle", android: "download-done" }}
+          themeColor="primary"
+        />
       </View>
       <Text style={styles.title}>Ready to Go</Text>
 

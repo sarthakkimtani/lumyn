@@ -29,7 +29,12 @@ export const ScrollDownButton = ({
     <Animated.View style={animatedStyle}>
       <View style={styles.scrollDownButton}>
         <Pressable onPress={onPress}>
-          <ThemedSymbolView themeColor="primary" name="arrow.down" size={20} weight="bold" />
+          <ThemedSymbolView
+            themeColor="primary"
+            icon={{ ios: "arrow.down", android: "arrow-downward" }}
+            size={20}
+            weight="bold"
+          />
         </Pressable>
       </View>
     </Animated.View>

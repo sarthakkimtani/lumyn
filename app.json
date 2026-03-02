@@ -6,11 +6,20 @@
     "orientation": "portrait",
     "scheme": "lumyn",
     "userInterfaceStyle": "automatic",
-    "platforms": ["ios"],
+    "platforms": ["ios", "android"],
     "ios": {
       "supportsTablet": false,
       "icon": "./assets/icons/ios.icon",
       "bundleIdentifier": "com.ai.lumyn"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff",
+        "foregroundImage": "./assets/icons/android.png",
+        "monochromeImage": "./assets/icons/android.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.ai.lumyn"
     },
     "plugins": [
       "expo-router",

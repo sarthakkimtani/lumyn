@@ -15,13 +15,14 @@ export const DownloadProgress = ({
   return (
     <Animated.View entering={FadeInDown.duration(400)} style={styles.section}>
       <View style={styles.iconCircle}>
-        <ThemedSymbolView size={30} name="arrow.down.circle" themeColor="primary" />
+        <ThemedSymbolView
+          size={30}
+          icon={{ ios: "arrow.down.circle", android: "download" }}
+          themeColor="primary"
+        />
       </View>
-
       <Text style={styles.title}>Downloading</Text>
-
       <Text style={styles.description}>Setting up your on-device AI.</Text>
-
       <ProgressBar percentage={percentage} progressWidth={progressWidth} />
     </Animated.View>
   );

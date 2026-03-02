@@ -7,7 +7,7 @@ export const ChatError = ({ error }: { error: Error }) => {
   return (
     <View style={styles.errorContainer}>
       <ThemedSymbolView
-        name="bubble.left.and.exclamationmark.bubble.right.fill"
+        icon={{ ios: "bubble.left.and.exclamationmark.bubble.right.fill", android: "feedback" }}
         themeColor="error"
       />
       <Text style={styles.errorText}>{error.message}</Text>

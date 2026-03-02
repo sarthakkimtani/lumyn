@@ -31,7 +31,11 @@ export const ConversationTile = ({
       onPress={() => onPress?.(conversation)}
     >
       <View style={styles.iconContainer}>
-        <ThemedSymbolView name="text.bubble.fill" themeColor="primary" size={20} />
+        <ThemedSymbolView
+          icon={{ ios: "text.bubble.fill", android: "question-answer" }}
+          themeColor="primary"
+          size={20}
+        />
       </View>
       <View style={[styles.content, !isLast && styles.contentSeparator]}>
         <Text numberOfLines={1} style={styles.titleText}>
@@ -39,7 +43,11 @@ export const ConversationTile = ({
         </Text>
         <View style={styles.trailing}>
           <Text style={styles.dateText}>{formatRelativeDate(conversation.createdAt)}</Text>
-          <ThemedSymbolView name="chevron.right" themeColor="textSecondary" size={12} />
+          <ThemedSymbolView
+            icon={{ ios: "chevron.right", android: "chevron-right" }}
+            themeColor="textSecondary"
+            size={12}
+          />
         </View>
       </View>
     </Pressable>

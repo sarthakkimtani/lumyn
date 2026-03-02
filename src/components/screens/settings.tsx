@@ -6,11 +6,15 @@ import { StyleSheet } from "react-native-unistyles";
 import { SettingsRow } from "@/components/features/settings/settings-row";
 import { SettingsSection } from "@/components/features/settings/settings-section";
 import { ThemePicker } from "@/components/features/settings/theme-picker";
-import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
+import { MaterialSymbol, ThemedSymbolView } from "@/components/util/themed-symbol-view";
 
-const SettingsIcon = ({ name, size }: { name: SFSymbol; size?: number }) => (
-  <ThemedSymbolView name={name} themeColor="textSecondary" size={size || 20} />
-);
+const SettingsIcon = ({
+  icon,
+  size,
+}: {
+  icon: { ios: SFSymbol; android: MaterialSymbol };
+  size?: number;
+}) => <ThemedSymbolView icon={icon} themeColor="textSecondary" size={size || 20} />;
 
 export const Settings = () => {
   return (
@@ -22,7 +26,7 @@ export const Settings = () => {
       <SettingsSection title="APPEARANCE">
         <SettingsRow
           label="Theme"
-          icon={<SettingsIcon name="circle.lefthalf.filled" />}
+          icon={<SettingsIcon icon={{ ios: "circle.lefthalf.filled", android: "contrast" }} />}
           trailing={<ThemePicker />}
           isFirst
           isLast
@@ -32,13 +36,15 @@ export const Settings = () => {
       <SettingsSection title="ABOUT">
         <SettingsRow
           label="Legal"
-          icon={<SettingsIcon name="scroll.fill" />}
-          trailing={<SettingsIcon name="chevron.right" size={16} />}
+          icon={<SettingsIcon icon={{ ios: "scroll.fill", android: "gavel" }} />}
+          trailing={
+            <SettingsIcon icon={{ ios: "chevron.right", android: "chevron-right" }} size={16} />
+          }
           isFirst
         />
         <SettingsRow
           label="Version"
-          icon={<SettingsIcon name="info.circle.fill" />}
+          icon={<SettingsIcon icon={{ ios: "info.circle.fill", android: "info" }} />}
           trailing={<Text style={styles.valueText}>{Application.nativeApplicationVersion}</Text>}
           isLast
         />

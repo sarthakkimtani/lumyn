@@ -35,7 +35,11 @@ export const ThemePicker = () => {
       themeVariant={theme !== "system" ? theme : undefined}
     >
       <Text style={styles.valueText}>{capitalizeFirstLetter(theme)}</Text>
-      <ThemedSymbolView name="chevron.up.chevron.down" themeColor="textSecondary" size={12} />
+      <ThemedSymbolView
+        icon={{ ios: "chevron.up.chevron.down", android: "contrast" }}
+        themeColor="textSecondary"
+        size={12}
+      />
     </MenuView>
   );
 };

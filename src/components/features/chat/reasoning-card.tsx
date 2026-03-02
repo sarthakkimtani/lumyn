@@ -24,7 +24,10 @@ export const ReasoningCard = ({
           weight="medium"
           size={12}
           themeColor="textSecondary"
-          name={expanded ? "chevron.down" : "chevron.right"}
+          icon={{
+            ios: expanded ? "chevron.down" : "chevron.right",
+            android: expanded ? "keyboard-arrow-down" : "chevron-right",
+          }}
         />
       </Pressable>
       {expanded ? (

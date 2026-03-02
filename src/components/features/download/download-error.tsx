@@ -11,7 +11,11 @@ export const DownloadError = ({ message, onRetry }: { message: string; onRetry: 
       style={styles.section}
     >
       <View style={styles.iconCircleError}>
-        <ThemedSymbolView size={30} name="exclamationmark.triangle" themeColor="error" />
+        <ThemedSymbolView
+          size={30}
+          icon={{ ios: "exclamationmark.triangle", android: "error" }}
+          themeColor="error"
+        />
       </View>
       <Text style={styles.title}>Download Failed</Text>
       <Text style={styles.description}>{message}</Text>

@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "android": "expo run:android"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.88",

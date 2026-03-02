@@ -4,26 +4,29 @@ import { SFSymbol } from "expo-symbols";
 import { Pressable, Text, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
+import { MaterialSymbol, ThemedSymbolView } from "@/components/util/themed-symbol-view";
 
 const SUGGESTIONS = [
   {
-    icon: "lightbulb.fill" as SFSymbol,
+    icon: { ios: "lightbulb.fill" as SFSymbol, android: "lightbulb" as MaterialSymbol },
     label: "Brainstorm ideas",
     prompt: "Help me brainstorm ideas for a new app feature.",
   },
   {
-    icon: "doc.text.fill" as SFSymbol,
+    icon: { ios: "doc.text.fill" as SFSymbol, android: "edit-document" as MaterialSymbol },
     label: "Help me write",
     prompt: "Help me write a concise message that sounds professional.",
   },
   {
-    icon: "chevron.left.forwardslash.chevron.right" as SFSymbol,
+    icon: {
+      ios: "chevron.left.forwardslash.chevron.right" as SFSymbol,
+      android: "code" as MaterialSymbol,
+    },
     label: "Write code",
     prompt: "Write a clean React Native component for a settings row.",
   },
   {
-    icon: "graduationcap.fill" as SFSymbol,
+    icon: { ios: "graduationcap.fill" as SFSymbol, android: "school" as MaterialSymbol },
     label: "Explain a concept",
     prompt: "Explain state management in React Native with examples.",
   },
@@ -39,7 +42,12 @@ export const EmptyChatArea = ({
   return (
     <View style={styles.chatArea}>
       {temporary ? (
-        <ThemedSymbolView style={styles.logo} name="lock.shield.fill" themeColor="primary" />
+        <View style={styles.logo}>
+          <ThemedSymbolView
+            icon={{ ios: "lock.shield.fill", android: "lock-outline" }}
+            themeColor="primary"
+          />
+        </View>
       ) : (
         <Image
           style={styles.logo}
@@ -58,7 +66,7 @@ export const EmptyChatArea = ({
           <View key={suggestion.label}>
             <Pressable onPress={() => onSuggestionPress?.(suggestion.prompt)}>
               <GlassView style={styles.suggestionChip} isInteractive>
-                <ThemedSymbolView themeColor="primary" name={suggestion.icon} size={20} />
+                <ThemedSymbolView themeColor="primary" icon={suggestion.icon} size={20} />
                 <Text style={styles.suggestionText}>{suggestion.label}</Text>
               </GlassView>
             </Pressable>

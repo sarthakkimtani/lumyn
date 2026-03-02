@@ -8,7 +8,12 @@ export const DownloadIdle = ({ onStart }: { onStart: () => void }) => {
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.section}>
       <View style={styles.iconCircle}>
-        <ThemedSymbolView size={30} weight="medium" name="arrow.down.circle" themeColor="primary" />
+        <ThemedSymbolView
+          size={30}
+          weight="medium"
+          icon={{ ios: "arrow.down.circle", android: "download" }}
+          themeColor="primary"
+        />
       </View>
       <Text style={styles.title}>Download Model</Text>
       <Text style={styles.description}>
