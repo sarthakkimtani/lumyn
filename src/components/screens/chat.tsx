@@ -2,6 +2,7 @@ import { useChat } from "@ai-sdk/react";
 import { DirectChatTransport } from "ai";
 import * as Crypto from "expo-crypto";
 import { router, Stack, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -67,6 +68,8 @@ export const Chat = () => {
 
   return (
     <ChatContext.Provider value={{ status, messages, regenerate }}>
+      <StatusBar style="auto" />
+
       <Stack.Toolbar placement="left">
         <Stack.Toolbar.Button
           icon="bubble.left.and.text.bubble.right"
@@ -74,7 +77,6 @@ export const Chat = () => {
         />
         <Stack.Toolbar.Button icon="gear" onPress={() => router.push("/settings")} />
       </Stack.Toolbar>
-
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
           hidden={messages.length === 0}

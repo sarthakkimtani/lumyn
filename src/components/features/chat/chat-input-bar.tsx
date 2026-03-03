@@ -47,7 +47,10 @@ export const ChatInputBar = ({
     <GlassContainer
       style={[styles.inputContainer, { marginBottom: isKeyboardVisible ? 20 : insets.bottom }]}
     >
-      <GlassView style={styles.glassContainer} isInteractive>
+      <GlassView
+        style={[styles.glassContainer, Platform.OS === "android" && styles.androidInput]}
+        isInteractive
+      >
         <ThemedTextInput
           style={styles.textInput}
           placeholder="Ask anything"
@@ -83,5 +86,11 @@ export const styles = StyleSheet.create((theme) => ({
   textInput: {
     fontSize: 16,
     color: theme.colors.text,
+  },
+  androidInput: {
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: theme.colors.cardBorder,
+    borderRadius: 24,
   },
 }));

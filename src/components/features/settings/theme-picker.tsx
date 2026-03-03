@@ -36,7 +36,7 @@ export const ThemePicker = () => {
     >
       <Text style={styles.valueText}>{capitalizeFirstLetter(theme)}</Text>
       <ThemedSymbolView
-        icon={{ ios: "chevron.up.chevron.down", android: "contrast" }}
+        icon={{ ios: "chevron.up.chevron.down", android: "unfold-more" }}
         themeColor="textSecondary"
         size={12}
       />

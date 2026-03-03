@@ -1,11 +1,13 @@
-import { Stack } from "expo-router";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { isModelDownloaded } from "@react-native-ai/llama";
+import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
+import { Platform, View } from "react-native";
 import { useUnistyles } from "react-native-unistyles";
 
 import { useModelContext } from "@/contexts/model-context";
 import { MODEL_ID, prepareAgent } from "@/lib/agent";
-import { isModelDownloaded } from "@react-native-ai/llama";
-import { useEffect } from "react";
 
 export const AppLayout = () => {
   const { theme } = useUnistyles();
@@ -30,7 +32,12 @@ export const AppLayout = () => {
     <Stack
       screenOptions={() => ({
         headerShadowVisible: false,
-        headerTransparent: true,
+        headerTransparent: Platform.OS === "ios",
+        headerTintColor: theme.colors.text,
+        headerStyle: {
+          backgroundColor: Platform.OS === "android" ? theme.colors.background : "transparent",
+          elevation: 0,
+        },
         headerTitleStyle: { color: theme.colors.text },
       })}
     >
@@ -42,6 +49,35 @@ export const AppLayout = () => {
           name="index"
           options={{
             title: "Lumyn",
+            headerTitleAlign: "center",
+            headerLeft: () => (
+              <View style={{ flexDirection: "row", gap: 5 }}>
+                <MaterialIcons.Button
+                  onPress={() => router.push("/conversations")}
+                  backgroundColor="transparent"
+                  color={theme.colors.textSecondary}
+                  name="chat"
+                  size={28}
+                />
+                <MaterialIcons.Button
+                  onPress={() => router.push("/settings")}
+                  backgroundColor="transparent"
+                  color={theme.colors.textSecondary}
+                  name="settings"
+                  size={28}
+                />
+              </View>
+            ),
+            headerRight: () => (
+              <View style={{ flexDirection: "row" }}>
+                <MaterialIcons.Button
+                  name="lock-open"
+                  size={28}
+                  backgroundColor="transparent"
+                  color={theme.colors.textSecondary}
+                />
+              </View>
+            ),
           }}
         />
         <Stack.Screen

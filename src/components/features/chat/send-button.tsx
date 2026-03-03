@@ -1,6 +1,7 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { SymbolView } from "expo-symbols";
 import { useEffect } from "react";
-import { Pressable } from "react-native";
+import { Platform, Pressable } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -31,27 +32,44 @@ export const SendButton = ({ onPress }: { onPress: () => void }) => {
 
   return (
     <Pressable accessibilityRole="button" onPress={onPress}>
-      <ThemedGlassView themeColor="primary" isInteractive style={styles.sendButton}>
+      <ThemedGlassView
+        themeColor="primary"
+        isInteractive
+        style={[styles.sendButton, Platform.OS === "android" && styles.androidStyle]}
+      >
         <Animated.View style={iconStyle}>
-          <SymbolView
-            name={
-              status === "streaming"
-                ? "stop.fill"
-                : status === "submitted"
-                  ? "ellipsis"
-                  : "arrow.up"
-            }
-            size={22}
-            weight="bold"
-            tintColor="#FFF"
-          />
+          {Platform.select({
+            ios: (
+              <SymbolView
+                name={
+                  status === "streaming"
+                    ? "stop.fill"
+                    : status === "submitted"
+                      ? "ellipsis"
+                      : "arrow.up"
+                }
+                size={22}
+                weight="bold"
+                tintColor="#FFF"
+              />
+            ),
+            android: (
+              <MaterialIcons
+                name={
+                  status === "streaming" ? "stop" : status === "submitted" ? "more-horiz" : "send"
+                }
+                size={22}
+                color="#FFF"
+              />
+            ),
+          })}
         </Animated.View>
       </ThemedGlassView>
     </Pressable>
   );
 };
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   sendButton: {
     width: 48,
     height: 48,
@@ -60,4 +78,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 2,
   },
-});
+  androidStyle: {
+    backgroundColor: theme.colors.primary,
+  },
+}));

@@ -1,9 +1,9 @@
-import { GlassView } from "expo-glass-effect";
 import { Image } from "expo-image";
 import { SFSymbol } from "expo-symbols";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
+import { SuggestionsChip } from "@/components/features/chat/suggestions-chip";
 import { MaterialSymbol, ThemedSymbolView } from "@/components/util/themed-symbol-view";
 
 const SUGGESTIONS = [
@@ -63,21 +63,20 @@ export const EmptyChatArea = ({
       </Text>
       <View style={styles.suggestionsRow}>
         {SUGGESTIONS.map((suggestion) => (
-          <View key={suggestion.label}>
-            <Pressable onPress={() => onSuggestionPress?.(suggestion.prompt)}>
-              <GlassView style={styles.suggestionChip} isInteractive>
-                <ThemedSymbolView themeColor="primary" icon={suggestion.icon} size={20} />
-                <Text style={styles.suggestionText}>{suggestion.label}</Text>
-              </GlassView>
-            </Pressable>
-          </View>
+          <SuggestionsChip
+            onPress={() => onSuggestionPress?.(suggestion.prompt)}
+            key={suggestion.label}
+            label={suggestion.label}
+            prompt={suggestion.prompt}
+            icon={suggestion.icon}
+          />
         ))}
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create((theme) => ({
+export const styles = StyleSheet.create((theme) => ({
   chatArea: {
     flex: 1,
     alignItems: "center",
@@ -110,19 +109,5 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: "center",
     flexWrap: "wrap",
     gap: 10,
-  },
-  suggestionChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
-    gap: 8,
-  },
-  suggestionText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: theme.colors.text,
   },
 }));

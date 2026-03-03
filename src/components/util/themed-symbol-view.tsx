@@ -6,9 +6,10 @@ import { withUnistyles } from "react-native-unistyles";
 
 export type ThemeColor = keyof AppThemes["light"]["colors"];
 export type MaterialSymbol = keyof typeof MaterialIcons.glyphMap;
+export type SymbolIcon = { ios: SFSymbol; android: MaterialSymbol };
 
 interface ThemedSymbolViewProps {
-  icon: { ios: SFSymbol; android: MaterialSymbol };
+  icon: SymbolIcon;
   themeColor: ThemeColor;
   size?: number;
   weight?: SymbolWeight;
