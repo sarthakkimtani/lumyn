@@ -44,6 +44,7 @@ export const EmptyChatArea = ({
       {temporary ? (
         <View style={styles.logo}>
           <ThemedSymbolView
+            size={60}
             icon={{ ios: "lock.shield.fill", android: "lock-outline" }}
             themeColor="primary"
           />
@@ -87,6 +88,8 @@ export const styles = StyleSheet.create((theme) => ({
     width: 100,
     height: 100,
     marginBottom: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     fontSize: 28,

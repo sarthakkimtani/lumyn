@@ -1,4 +1,4 @@
-import { Linking } from "react-native";
+import { Linking, Platform } from "react-native";
 import { EnrichedMarkdownText } from "react-native-enriched-markdown";
 import { withUnistyles } from "react-native-unistyles";
 
@@ -66,7 +66,7 @@ const ThemedEnrichedMarkdownText = withUnistyles(EnrichedMarkdownText, (theme, r
     },
     codeBlock: {
       fontSize: 14,
-      fontFamily: "Menlo",
+      fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
       color: rt.themeName === "dark" ? "#F3F4F6" : "#101828",
       backgroundColor: rt.themeName === "dark" ? "#13161A" : "#F8FAFC",
       borderColor: rt.themeName === "dark" ? "#23272F" : "#E4E7EC",

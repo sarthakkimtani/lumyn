@@ -19,6 +19,7 @@
         "monochromeImage": "./assets/icons/android.png"
       },
       "predictiveBackGestureEnabled": false,
+      "softwareKeyboardLayoutMode": "pan",
       "package": "com.ai.lumyn"
     },
     "plugins": [

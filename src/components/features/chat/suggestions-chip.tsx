@@ -14,10 +14,7 @@ interface SuggestionsChipProps {
 export const SuggestionsChip = ({ icon, label, onPress }: SuggestionsChipProps) => {
   return (
     <Pressable onPress={onPress}>
-      <GlassView
-        style={[styles.suggestionChip, Platform.OS === "android" && styles.androidStyle]}
-        isInteractive
-      >
+      <GlassView style={styles.suggestionChip} isInteractive>
         <ThemedSymbolView themeColor="primary" icon={icon} size={20} />
         <Text style={styles.suggestionText}>{label}</Text>
       </GlassView>
@@ -34,10 +31,11 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: 10,
     gap: 8,
     borderRadius: 20,
-  },
-  androidStyle: {
-    borderWidth: 1,
-    borderColor: theme.colors.cardBorder,
+
+    ...(Platform.OS === "android" && {
+      borderWidth: 1,
+      borderColor: theme.colors.cardBorder,
+    }),
   },
   suggestionText: {
     fontSize: 14,

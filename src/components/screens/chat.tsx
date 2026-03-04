@@ -2,7 +2,6 @@ import { useChat } from "@ai-sdk/react";
 import { DirectChatTransport } from "ai";
 import * as Crypto from "expo-crypto";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -11,6 +10,8 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { ChatInputBar } from "@/components/features/chat/chat-input-bar";
 import { ChatMessages } from "@/components/features/chat/chat-messages";
 import { EmptyChatArea } from "@/components/features/chat/empty-chat-area";
+import { ChatHeaderLeft } from "@/components/headers/chat-header-left";
+import { ChatHeaderRight } from "@/components/headers/chat-header-right";
 
 import { ChatContext } from "@/contexts/chat-context";
 import { usePersistChat } from "@/hooks/use-persist-chat";
@@ -68,8 +69,7 @@ export const Chat = () => {
 
   return (
     <ChatContext.Provider value={{ status, messages, regenerate }}>
-      <StatusBar style="auto" />
-
+      {/* iOS Toolbar */}
       <Stack.Toolbar placement="left">
         <Stack.Toolbar.Button
           icon="bubble.left.and.text.bubble.right"
@@ -90,9 +90,26 @@ export const Chat = () => {
         />
       </Stack.Toolbar>
 
+      {/* Android Toolbar */}
+      <Stack.Screen
+        options={{
+          title: "Lumyn",
+          headerTitleAlign: "center",
+          headerLeft: () => <ChatHeaderLeft />,
+          headerRight: () => (
+            <ChatHeaderRight
+              chatStarted={messages.length > 0}
+              temporary={isTemporary}
+              onPress={messages.length > 0 ? startNewChat : toggleTemporaryMode}
+            />
+          ),
+        }}
+      />
+
       <ThemedKeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "android" ? 100 : 0}
       >
         {messages.length > 0 ? (
           <ChatMessages messages={messages} error={error} />
