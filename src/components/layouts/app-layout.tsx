@@ -1,11 +1,11 @@
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
 import { useUnistyles } from "react-native-unistyles";
 
 import { useModelContext } from "@/contexts/model-context";
 import { MODEL_ID, prepareAgent } from "@/lib/agent";
-import { isModelDownloaded } from "@react-native-ai/llama";
-import { useEffect } from "react";
+import { modelDownloader } from "@/lib/model-downloader";
 
 export const AppLayout = () => {
   const { theme } = useUnistyles();
@@ -13,7 +13,7 @@ export const AppLayout = () => {
 
   useEffect(() => {
     const init = async () => {
-      const downloaded = await isModelDownloaded(MODEL_ID);
+      const downloaded = await modelDownloader.isModelDownloaded(MODEL_ID);
       setReady(downloaded);
       if (downloaded) {
         await prepareAgent();

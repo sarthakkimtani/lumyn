@@ -1,36 +1,28 @@
-import { downloadModel } from "@react-native-ai/llama";
 import { useState } from "react";
 
 import { MODEL_ID, prepareAgent } from "@/lib/agent";
+import { modelDownloader } from "@/lib/model-downloader";
 
-export type DownloadState = "idle" | "downloading" | "complete" | "error";
-interface UseModelDownloadOptions {
-  onReady: () => void;
-}
-
-export const useModelDownload = ({ onReady }: UseModelDownloadOptions) => {
-  const [state, setState] = useState<DownloadState>("idle");
+export const useModelDownload = ({ onReady }: { onReady: () => void }) => {
+  const [state, setState] = useState("idle");
   const [percentage, setPercentage] = useState(0);
-  const [errorMessage, setErrorMessage] = useState("");
   const [preparing, setPreparing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const startDownload = async (onProgress: (pct: number) => void) => {
-    setState("downloading");
-    setPercentage(0);
-    setErrorMessage("");
-
     try {
-      await downloadModel(MODEL_ID, (progress) => {
-        const pct = Math.round(progress.percentage);
-        setPercentage(pct);
-        onProgress(pct);
+      setState("downloading");
+
+      const path = await modelDownloader.start(MODEL_ID, (p) => {
+        setPercentage(p);
+        onProgress(p);
       });
 
-      setPercentage(100);
       setState("complete");
+      return path;
     } catch (e) {
       setState("error");
-      setErrorMessage(e instanceof Error ? e.message : "Download failed");
+      setErrorMessage(e instanceof Error ? e.message : "Download Failed");
     }
   };
 

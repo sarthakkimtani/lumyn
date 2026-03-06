@@ -1,11 +1,12 @@
-import { getModelPath, llama } from "@react-native-ai/llama";
+import { llama } from "@react-native-ai/llama";
 import { InferAgentUIMessage, ToolLoopAgent } from "ai";
 
+import { modelDownloader } from "@/lib/model-downloader";
 import { systemPrompt } from "@/lib/prompt";
 
 export const MODEL_ID = "Qwen/Qwen2.5-1.5B-Instruct-GGUF/qwen2.5-1.5b-instruct-q4_k_m.gguf";
 
-const modelPath = getModelPath(MODEL_ID);
+const modelPath = modelDownloader.getModelPath(MODEL_ID);
 const model = llama.languageModel(modelPath, {
   projectorUseGpu: true,
   contextParams: {
