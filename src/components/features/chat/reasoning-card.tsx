@@ -1,5 +1,12 @@
-import { Pressable, Text } from "react-native";
-import Animated, { FadeInDown, FadeOutUp, LinearTransition } from "react-native-reanimated";
+import { useEffect } from "react";
+import { Pressable, Text, View } from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { StyleSheet } from "react-native-unistyles";
 
 import { ThemedSymbolView } from "@/components/util/themed-symbol-view";
@@ -13,13 +20,31 @@ export const ReasoningCard = ({
   expanded: boolean;
   onToggle: () => void;
 }) => {
+  const progress = useSharedValue(expanded ? 1 : 0);
+
+  useEffect(() => {
+    progress.value = withTiming(expanded ? 1 : 0, {
+      duration: 180,
+    });
+  }, [expanded, progress]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: progress.value,
+      maxHeight: interpolate(progress.value, [0, 1], [0, 500], Extrapolation.CLAMP),
+    };
+  });
+
   return (
-    <Animated.View style={styles.container} layout={LinearTransition.duration(180)}>
+    <Animated.View style={styles.container}>
       <Pressable
         style={({ pressed }) => [styles.header, pressed && styles.headerPressed]}
         onPress={onToggle}
       >
-        <Text style={styles.title}>Thinking</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <ThemedSymbolView weight="medium" size={16} themeColor="textSecondary" name="brain" />
+          <Text style={styles.title}>Thinking</Text>
+        </View>
         <ThemedSymbolView
           weight="medium"
           size={12}
@@ -27,17 +52,11 @@ export const ReasoningCard = ({
           name={expanded ? "chevron.down" : "chevron.right"}
         />
       </Pressable>
-      {expanded ? (
-        <Animated.View
-          style={styles.content}
-          entering={FadeInDown.duration(180)}
-          exiting={FadeOutUp.duration(140)}
-        >
-          <Text style={styles.body} selectable>
-            {content}
-          </Text>
-        </Animated.View>
-      ) : null}
+      <Animated.View style={[styles.content, animatedStyle]}>
+        <Text style={styles.body} selectable>
+          {content}
+        </Text>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -66,18 +85,14 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: "700",
     letterSpacing: 0.2,
   },
-  chevron: {
-    color: theme.colors.textSecondary,
-    fontSize: 14,
-    fontWeight: "700",
-  },
   content: {
+    overflow: "hidden",
     borderTopWidth: 1,
     borderTopColor: theme.colors.cardBorder,
     paddingHorizontal: 12,
-    paddingVertical: 10,
   },
   body: {
+    paddingVertical: 10,
     color: theme.colors.textSecondary,
     fontSize: 13,
     lineHeight: 20,
