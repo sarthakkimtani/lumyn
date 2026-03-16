@@ -20,7 +20,7 @@ const buildSections = (rows: ConversationRow[]): ConversationSection[] => {
   const grouped = new Map<DateSection, ConversationRow[]>();
 
   for (const row of rows) {
-    const section = getDateSection(row.createdAt);
+    const section = getDateSection(row.updatedAt);
     const existing = grouped.get(section);
     if (existing) {
       existing.push(row);

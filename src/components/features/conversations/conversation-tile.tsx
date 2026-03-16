@@ -38,7 +38,7 @@ export const ConversationTile = ({
           {conversation.title?.trim() || "Untitled chat"}
         </Text>
         <View style={styles.trailing}>
-          <Text style={styles.dateText}>{formatRelativeDate(conversation.createdAt)}</Text>
+          <Text style={styles.dateText}>{formatRelativeDate(conversation.updatedAt)}</Text>
           <ThemedSymbolView name="chevron.right" themeColor="textSecondary" size={12} />
         </View>
       </View>

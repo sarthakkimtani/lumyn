@@ -35,7 +35,7 @@
         "react": "19.2.0",
         "react-dom": "19.2.0",
         "react-native": "0.83.2",
-        "react-native-enriched-markdown": "^0.2.0",
+        "react-native-enriched-markdown": "^0.4.0",
         "react-native-gesture-handler": "~2.30.0",
         "react-native-keyboard-controller": "1.20.7",
         "react-native-mmkv": "^4.1.2",
@@ -1461,7 +1461,7 @@
 
     "react-native-edge-to-edge": ["react-native-edge-to-edge@1.7.0", "", { "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-ERegbsq28yoMndn/Uq49i4h6aAhMvTEjOfkFh50yX9H/dMjjCr/Tix/es/9JcPRvC+q7VzCMWfxWDUb6Jrq1OQ=="],
 
-    "react-native-enriched-markdown": ["react-native-enriched-markdown@0.2.0", "", { "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-3Mdl5+iH+KuEwwb9sThy3p7+ucnDjNf77XgXcqNuVlgB6oR9tWny3MYOkoQ5OBl+0zo/vXCYLSBISNim9JCGzg=="],
+    "react-native-enriched-markdown": ["react-native-enriched-markdown@0.4.0", "", { "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-4HC/o4qLN0L1P/DscsoCWry/cVwvDCxR8hisJ9eWJuyJqaPa/GP+wwvVXml+u1CQs9TLPTgl53o5UEKkV2d5ug=="],
 
     "react-native-gesture-handler": ["react-native-gesture-handler@2.30.0", "", { "dependencies": { "@egjs/hammerjs": "^2.0.17", "hoist-non-react-statics": "^3.3.0", "invariant": "^2.2.4" }, "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-5YsnKHGa0X9C8lb5oCnKm0fLUPM6CRduvUUw2Bav4RIj/C3HcFh4RIUnF8wgG6JQWCL1//gRx4v+LVWgcIQdGA=="],
 

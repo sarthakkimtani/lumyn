@@ -20,7 +20,10 @@ export const useQueries = () => {
   };
 
   const fetchConversations = async () => {
-    return await db.select().from(conversations).orderBy(desc(conversations.createdAt));
+    return await db
+      .select()
+      .from(conversations)
+      .orderBy(desc(conversations.updatedAt), desc(conversations.createdAt));
   };
 
   const fetchConversationById = async (conversationId: string) => {
@@ -47,7 +50,10 @@ export const useQueries = () => {
       .values(insertEntry)
       .onConflictDoUpdate({
         target: conversations.id,
-        set: { title: insertEntry.title },
+        set: {
+          title: insertEntry.title,
+          updatedAt: sql`(unixepoch())`,
+        },
       });
     return res.changes;
   };
